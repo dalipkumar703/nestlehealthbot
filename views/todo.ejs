@@ -1,0 +1,25 @@
+<html>
+<head>
+<title>
+A todo List app
+</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<link href="/assets/styles.css" rel="stylesheet" type="text/css">
+<script src="/assets/todo-list.js"></script>
+
+</head>
+<body>
+<div id="todo-table">
+  <form>
+    <input type="text" name="item" placeholder="xyz" required/>
+    <button type="submit">Add Item</button>
+  </form>
+  <ul>
+    <% for(i=0; i<todo.length;i++) { %>
+<li><%= todo[i].item %></li>
+<% } %>
+
+  </ul>
+</div>
+</body>
+</html>
