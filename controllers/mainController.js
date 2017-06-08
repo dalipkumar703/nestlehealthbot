@@ -3,6 +3,7 @@ var mongoose=require('mongoose');
 var request=require('request');
 var dotenv = require('dotenv');
 var api = require('./api.js');
+var User= require('../models/user.js');
 dotenv.load();
 var db=process.env.DB_URL;
 mongoose.connect(db);
@@ -31,13 +32,42 @@ app.use(bodyParser.json())
 
     // Iterate over each entry - there may be multiple if batched
     data.entry.forEach(function(entry) {
+			//page ID used by the Data comes from Facebook
       var pageID = entry.id;
+			//timeEvent of Data used from facebook
       var timeOfEvent = entry.time;
 
       // Iterate over each messaging event
       entry.messaging.forEach(function(event) {
         if (event.message) {
-					let text=event.message.text
+					request({
+						url:"https://graph.facebook.com/v2.6/1215082925284543",
+						qs: {
+							access_token:process.env.FACEBOOK_TOKEN,
+						},
+						method: "GET"
+					},function (error, response, body) {
+				    if (!error && response.statusCode == 200) {
+							var parsed = JSON.parse(response.body);
+							var userName=parsed.first_name;
+							var gender=parsed.gender;
+						  var newUser=User({user_id:event.sender.id,name:userName,gender:gender,is_bmr:false,is_reminder:false}).save(function(err,data){
+		if(err) throw err;
+		console.log(data);
+	});
+              console.log(newUser);
+						  console.log(parsed);
+				    } else {
+				      console.error("Unable to send message.");
+				    //  console.error(response);
+				    //  console.error(error);
+				    }
+						console.log("hello");
+
+
+				});
+				//	User({user_id:event.sender.id,name:})
+				 let text=event.message.text
           receivedMessage(event,text)
         }
       });
