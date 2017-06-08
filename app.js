@@ -1,11 +1,12 @@
 var express=require('express');
-var toDoController=require('./controllers/todocontroller');
+var mainController=require('./controllers/mainController');
 var app=express();
+var dotenv = require('dotenv');
+dotenv.load();
 
-app.set('view engine','ejs');
 
 app.use(express.static('./public'));
-toDoController(app);
+mainController(app);
 
-app.listen(3000);
+app.listen(process.env.HOST);
 console.log("hello app");

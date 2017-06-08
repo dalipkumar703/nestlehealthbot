@@ -1,7 +1,7 @@
 {
   "name": "node-js",
   "version": "1.0.0",
-  "description": "CSS and asset files for the Net Ninja YouTube nodejs playlist",
+  "description": "Nestle Health Bot development.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -11,9 +11,11 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.17.2",
-    "ejs": "^2.5.6",
+    "dotenv": "^4.0.0",
     "express": "^4.15.3",
     "mongoose": "^4.10.4",
-    "nodemon": "^1.11.0"
+    "nodemon": "^1.11.0",
+    "request": "^2.81.0",
+    "require": "^2.4.20"
   }
 }
