@@ -77,14 +77,14 @@ app.use(bodyParser.json())
 		 // handle result
 		  textMsg=event.message.text+" "+result.name;
 			console.log("function scope textMsg:",textMsg);
-		// receivedMessage(event,text)
+		 receivedMessage(event,textMsg)
 	 } else {
 		 // error handling
 		 console.log("error:", error);
 	 };
  });
-  console.log("text:",textMsg);
-    receivedMessage(event,textMsg)
+  //console.log("text:",textMsg);
+    //receivedMessage(event,textMsg)
         }
       });
     });
