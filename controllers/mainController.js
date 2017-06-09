@@ -5,6 +5,7 @@ var dotenv = require('dotenv');
 var api = require('./api.js');
 var User= require('../models/user.js');
 var textMsg;
+
 dotenv.load();
 var db=process.env.DB_URL;
 console.log(db);
@@ -41,35 +42,124 @@ app.use(bodyParser.json())
 
       // Iterate over each messaging event
       entry.messaging.forEach(function(event) {
-        if (event.message) {
-					request({
-						url:"https://graph.facebook.com/v2.6/1215082925284543",
-						qs: {
-							access_token:process.env.FACEBOOK_TOKEN,
-						},
-						method: "GET"
-					},function (error, response, body) {
-				    if (!error && response.statusCode == 200) {
-							var parsed = JSON.parse(response.body);
-							var userName=parsed.first_name;
-							var gender=parsed.gender;
-            //STORE USER DETAIL INTO USER COLLECTION
 
-							var newUser=User({user_id:event.sender.id,name:userName,gender:gender,is_bmr:false,is_reminder:false}).save(function(err,data){
-		if(err) throw err;
-		console.log("user store:",data);
-	});
-            //  console.log(newUser);
-						 // console.log(parsed);
-				    } else {
-				      console.error("Unable to send message.");
-				    //  console.error(response);
-				    //  console.error(error);
-				    }
-						console.log("hello");
+			if(event.postback)
+			 {
+				 if(event.postback.payload==="USER_DEFINED_PAYLOAD")
+				 {
+					 var messageData = {
+					 recipient: {
+						 id: event.sender.id
+					 },
+					 message:{
+						 "text":"Pick a color:",
+						 "quick_replies":[
+							 {
+								 "content_type":"text",
+								 "title":"Red",
+								 "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
+							 },
+							 {
+								 "content_type":"text",
+								 "title":"Green",
+								 "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+							 }
+						 ]
+					 }
+					};
+					callSendAPI(messageData);
+				 }
 
 
-				});
+			 }
+				else if(event.message) {
+
+                 if(event.message.quick_reply)
+								 {
+
+									 if(event.message.quick_reply.payload==="DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN")
+                    {
+											var messageData = {
+											 recipient: {
+												 id: event.sender.id
+											 },
+											 message: {
+												 attachment: {
+										       type: "template",
+										       payload: {
+										         template_type: "generic",
+										         elements: [{
+										           title: "rift",
+										           subtitle: "Next-generation virtual reality",
+										           item_url: "https://google.com",
+										           image_url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRIUjkbYB9NZdUbzlf7kP0KLnWYfzgwY4xY46fXlSrWasW6AnuW",
+										           buttons: [{
+										             type: "web_url",
+										             url: "http://google.com",
+										             title: "Open Web URL"
+										           }, {
+										             type: "postback",
+										             title: "Call Postback",
+										             payload: "Payload for first bubble",
+										           }],
+										         }, {
+										           title: "touch",
+										           subtitle: "Your Hands, Now in VR",
+										           item_url: "https://google.com",
+										           image_url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRIUjkbYB9NZdUbzlf7kP0KLnWYfzgwY4xY46fXlSrWasW6AnuW",
+										           buttons: [{
+										             type: "web_url",
+										             url: "https://google.com",
+										             title: "Open Web URL"
+										           }, {
+										             type: "postback",
+										             title: "Call Postback",
+										             payload: "Payload for second bubble",
+										           }]
+										         }]
+										       }
+										     }
+
+											 }
+										 };
+										 callSendAPI(messageData);
+										}
+								 }
+							//console.log("type of message:",event.message.quick_reply);
+					      //console.log("quick_reply:",message);
+				//console.log("MESSAGE OBJECT",event.message[0].quick_reply);
+
+
+							request({
+								url:"https://graph.facebook.com/v2.6/1215082925284543",
+								qs: {
+									access_token:process.env.FACEBOOK_TOKEN,
+								},
+								method: "GET"
+							},function (error, response, body) {
+								if (!error && response.statusCode == 200) {
+									var parsed = JSON.parse(response.body);
+									var userName=parsed.first_name;
+									var gender=parsed.gender;
+								//STORE USER DETAIL INTO USER COLLECTION
+
+									var newUser=User({user_id:event.sender.id,name:userName,gender:gender,is_bmr:false,is_reminder:false}).save(function(err,data){
+				if(err) throw err;
+				console.log("user store:",data);
+			});
+								//  console.log(newUser);
+								 // console.log(parsed);
+								} else {
+									console.error("Unable to send message.");
+								//  console.error(response);
+								//  console.error(error);
+								}
+								console.log("hello");
+
+
+						});
+
+
 				//	User({user_id:event.sender.id,name:})
 
 			User.findOne({user_id:event.sender.id}).exec(function(err, result) {
@@ -80,12 +170,13 @@ app.use(bodyParser.json())
 		 receivedMessage(event,textMsg)
 	 } else {
 		 // error handling
-		 console.log("error:", error);
+		 console.log("error in find command");
 	 };
  });
   //console.log("text:",textMsg);
     //receivedMessage(event,textMsg)
-        }
+	}
+
       });
     });
 
@@ -105,9 +196,27 @@ function receivedMessage(event,textMsg) {
 		 id: event.sender.id
 	 },
 	 message: {
-		 text: textMsg
+		 "attachment":{
+       "type":"template",
+       "payload":{
+         "template_type":"button",
+         "text":textMsg,
+         "buttons":[
+           {
+             "type":"postback",
+             "title":"Start Chatting",
+             "payload":"USER_DEFINED_PAYLOAD"
+           }
+         ]
+       }
+     }
 	 }
  };
+ callSendAPI(messageData);
+	//console.log("Message data: ", event.message);
+}
+function callSendAPI(messageData)
+{
 	request({
 		url:"https://graph.facebook.com/v2.6/me/messages",
 		qs: {access_token:process.env.FACEBOOK_TOKEN},
@@ -122,13 +231,13 @@ function receivedMessage(event,textMsg) {
         messageId, recipientId);
     } else {
       console.error("Unable to send message.");
-     console.error(response);
-    console.error(error);
+     //console.error(response);
+    //console.error(error);
     }
 		console.log("hello");
 
 
 });
-	console.log("Message data: ", event.message);
+
 }
 }
