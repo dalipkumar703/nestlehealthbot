@@ -4,8 +4,10 @@ var request=require('request');
 var dotenv = require('dotenv');
 var api = require('./api.js');
 var User= require('../models/user.js');
+var textMsg;
 dotenv.load();
 var db=process.env.DB_URL;
+console.log(db);
 mongoose.connect(db);
 module.exports=function(app) {
 	app.use(bodyParser.urlencoded({extended: false}))
@@ -51,12 +53,14 @@ app.use(bodyParser.json())
 							var parsed = JSON.parse(response.body);
 							var userName=parsed.first_name;
 							var gender=parsed.gender;
-						  var newUser=User({user_id:event.sender.id,name:userName,gender:gender,is_bmr:false,is_reminder:false}).save(function(err,data){
+            //STORE USER DETAIL INTO USER COLLECTION
+
+							var newUser=User({user_id:event.sender.id,name:userName,gender:gender,is_bmr:false,is_reminder:false}).save(function(err,data){
 		if(err) throw err;
-		console.log(data);
+		console.log("user store:",data);
 	});
-              console.log(newUser);
-						  console.log(parsed);
+            //  console.log(newUser);
+						 // console.log(parsed);
 				    } else {
 				      console.error("Unable to send message.");
 				    //  console.error(response);
@@ -67,8 +71,20 @@ app.use(bodyParser.json())
 
 				});
 				//	User({user_id:event.sender.id,name:})
-				 let text=event.message.text
-          receivedMessage(event,text)
+
+			User.findOne({user_id:event.sender.id}).exec(function(err, result) {
+	 if (!err) {
+		 // handle result
+		  textMsg=event.message.text+" "+result.name;
+			console.log("function scope textMsg:",textMsg);
+		// receivedMessage(event,text)
+	 } else {
+		 // error handling
+		 console.log("error:", error);
+	 };
+ });
+  console.log("text:",textMsg);
+    receivedMessage(event,textMsg)
         }
       });
     });
@@ -82,14 +98,14 @@ app.use(bodyParser.json())
   }
 });
 
-function receivedMessage(event,text) {
+function receivedMessage(event,textMsg) {
   // Putting a stub for now, we'll expand it in the following steps
 	var messageData = {
 	 recipient: {
 		 id: event.sender.id
 	 },
 	 message: {
-		 text: text
+		 text: textMsg
 	 }
  };
 	request({
@@ -106,8 +122,8 @@ function receivedMessage(event,text) {
         messageId, recipientId);
     } else {
       console.error("Unable to send message.");
-    //  console.error(response);
-    //  console.error(error);
+     console.error(response);
+    console.error(error);
     }
 		console.log("hello");
 
