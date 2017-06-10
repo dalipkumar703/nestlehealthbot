@@ -1,6 +1,6 @@
-var express=require('express');
-var mainController=require('./controllers/mainController');
-var app=express();
+var express = require('express');
+var mainController = require('./controllers/mainController');
+var app = express();
 var dotenv = require('dotenv');
 dotenv.load();
 
