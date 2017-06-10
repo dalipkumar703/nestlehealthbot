@@ -72,18 +72,24 @@ app.use(bodyParser.json())
 				});
 				//	User({user_id:event.sender.id,name:})
 
-			User.findOne({user_id:event.sender.id}).exec(function(err, result) {
+			 textMsg=User.findOne({user_id:event.sender.id}).exec(function(err, result) {
 	 if (!err) {
 		 // handle result
-		  textMsg=event.message.text+" "+result.name;
-			console.log("function scope textMsg:",textMsg);
+		   let text1=event.message.text+" "+result.name;
+		  return text1;
 		// receivedMessage(event,text)
 	 } else {
 		 // error handling
-		 console.log("error:", error);
+		 console.log("error found");
 	 };
  });
-  console.log("text:",textMsg);
+ textMsg.then(function(data){
+	 textMsg=data.name;
+ },function(error){
+	 console.log("error found promise");
+ });
+
+
     receivedMessage(event,textMsg)
         }
       });
@@ -122,8 +128,8 @@ function receivedMessage(event,textMsg) {
         messageId, recipientId);
     } else {
       console.error("Unable to send message.");
-     console.error(response);
-    console.error(error);
+     //console.error(response);
+    //console.error(error);
     }
 		console.log("hello");
 
