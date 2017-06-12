@@ -6,7 +6,7 @@ var dotenv = require('dotenv');
 var api = require('./api.js');
 var User = require('../models/user.js');
 var Bot = require('../models/bot.js');
-var _=require('underscore'); 
+var _ = require('underscore');
 var textMsg;
 var userName;
 var noOfUser;
@@ -59,7 +59,7 @@ module.exports = function(app) {
                   //console.log("bot message :",result[0].image_url);
                   var image_url = result[0].image_url;
                   var title = result[0].subtitle;
-                  var payload = "payload bot";
+                  var payload = "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN";
                   var button_title = result[0].subtitle;
                   replyWithAttachments(event.sender.id, image_url, title, payload, button_title);
                 } else {
@@ -71,7 +71,7 @@ module.exports = function(app) {
               //console.log("bot database reply:",botmessage);
               //  replyWithAttachments(event.sender.id);
             }
-            if (event.postback.payload === "Payload for first bubble") {
+            if (event.postback.payload === "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN") {
               quickReply(event.sender.id);
             }
 
@@ -104,17 +104,38 @@ module.exports = function(app) {
                   var userName = parsed.first_name;
                   var gender = parsed.gender;
                   //STORE USER DETAIL INTO USER COLLECTION
-
-                  var newUser = User({
-                    user_id: event.sender.id,
-                    name: userName,
-                    gender: gender,
-                    is_bmr: false,
-                    is_reminder: false
-                  }).save(function(err, data) {
-                    if (err) throw err;
-                    console.log("user store:", data);
+                  User.findOne({
+                    user_id: event.sender.id
+                  }).exec(function(err, result) {
+                    if (!err) {
+                      // handle result
+                      //textMsg = event.message.text + " " + result.name;
+                      //console.log("function scope textMsg:", textMsg);
+                      //receivedMessage(event, textMsg)
+                      //console.log("length of user:",_.size(result));
+                      if (_.size(result) == 0) {
+                        User({
+                          user_id: event.sender.id,
+                          name: userName,
+                          gender: gender,
+                          is_bmr: false,
+                          is_reminder: false
+                        }).save(function(err, data) {
+                          if (err) throw err;
+                          console.log("user store:", data);
+                        });
+                        textMsg = event.message.text + " " + userName;
+                        receivedMessage(event, textMsg);
+                      } else {
+                        textMsg = event.message.text + " " + result.name;
+                        receivedMessage(event, textMsg);
+                      }
+                    } else {
+                      // error handling
+                      console.log("error in find command");
+                    };
                   });
+
                   //  console.log(newUser);
                   // console.log(parsed);
                 } else {
@@ -130,24 +151,10 @@ module.exports = function(app) {
 
               //	User({user_id:event.sender.id,name:})
 
-              User.findOne({
-                user_id: event.sender.id
-              }).exec(function(err, result) {
-                if (!err) {
-                  // handle result
-                  //textMsg = event.message.text + " " + result.name;
-                  //console.log("function scope textMsg:", textMsg);
-                  //receivedMessage(event, textMsg)
-                 console.log("length of user:",_.size(result));
-
-								} else {
-                  // error handling
-                  console.log("error in find command");
-                };
-              });
 
 
-             console.log("user detail:",checkData);
+
+              //console.log("user detail:",checkData);
             }
 
             //console.log("text:",textMsg);
