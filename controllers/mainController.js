@@ -6,6 +6,7 @@ var dotenv = require('dotenv');
 var api = require('./api.js');
 var User = require('../models/user.js');
 var Bot = require('../models/bot.js');
+var functionController = require('./functionController.js');
 var _ = require('underscore');
 var textMsg;
 var userName;
@@ -61,7 +62,8 @@ module.exports = function(app) {
                   var title = result[0].subtitle;
                   var payload = "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN";
                   var button_title = result[0].subtitle;
-                  replyWithAttachments(event.sender.id, image_url, title, payload, button_title);
+                  //  replyWithAttachments(event.sender.id, image_url, title, payload, button_title);
+                  functionController.replyWithAttachments(event.sender.id, image_url, title, payload, button_title);
                 } else {
                   // error handling
                   console.log("error in find command");
@@ -72,10 +74,9 @@ module.exports = function(app) {
               //  replyWithAttachments(event.sender.id);
             }
             if (event.postback.payload === "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN") {
-              quickReply(event.sender.id);
+              //quickReply(event.sender.id);
+              functionController.quickReply(event.sender.id);
             }
-
-
           } else if (event.message && event.message.attachments) {
             console.log("message with attachments");
           } else if (event.message && event.message.text) {
@@ -83,15 +84,11 @@ module.exports = function(app) {
             if (event.message.quick_reply) {
 
               if (event.message.quick_reply.payload === "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN") {
-                quickReply(event.sender.id);
+                //quickReply(event.sender.id);
+                functionController.quickReply(event.sender.id);
               }
             } else {
-              //message is not quick reply
-              //console.log("type of message:",event.message.quick_reply);
-              //console.log("quick_reply:",message);
-              //console.log("MESSAGE OBJECT",event.message[0].quick_reply);
-
-
+              //message is text type
               request({
                 url: "https://graph.facebook.com/v2.6/1215082925284543",
                 qs: {
@@ -125,39 +122,26 @@ module.exports = function(app) {
                           console.log("user store:", data);
                         });
                         textMsg = event.message.text + " " + userName;
-                        receivedMessage(event, textMsg);
+                        //receivedMessage(event, textMsg);
+                        functionController.receivedMessage(event, textMsg);
                       } else {
                         textMsg = event.message.text + " " + result.name;
-                        receivedMessage(event, textMsg);
+                        //receivedMessage(event, textMsg);
+                        functionController.receivedMessage(event, textMsg);
                       }
                     } else {
                       // error handling
                       console.log("error in find command");
                     };
                   });
-
-                  //  console.log(newUser);
-                  // console.log(parsed);
                 } else {
                   console.error("Unable to send message.");
                   //  console.error(response);
                   //  console.error(error);
                 }
                 console.log("hello");
-
-
               });
-
-
-              //	User({user_id:event.sender.id,name:})
-
-
-
-
-              //console.log("user detail:",checkData);
             }
-
-            //console.log("text:",textMsg);
             //receivedMessage(event,textMsg)
           }
 
@@ -172,117 +156,4 @@ module.exports = function(app) {
       res.sendStatus(200);
     }
   });
-
-  //  message for quick reply
-  function quickReply(recipient) {
-    var messageData = {
-      recipient: {
-        id: recipient
-      },
-      message: {
-        "text": "Pick a color:",
-        "quick_replies": [{
-            "content_type": "text",
-            "title": "Red",
-            "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
-          },
-          {
-            "content_type": "text",
-            "title": "Green",
-            "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
-          }
-        ]
-      }
-    };
-    callSendAPI(messageData);
-  }
-
-  //reply with attachments
-  function replyWithAttachments(recipient, image_url, title, payload, button_title) {
-    var messageData = {
-      recipient: {
-        id: recipient
-      },
-      message: {
-        attachment: {
-          type: "template",
-          payload: {
-            template_type: "generic",
-            elements: [{
-              title: title,
-              image_url: image_url,
-              buttons: [{
-                type: "postback",
-                title: "Call Postback",
-                payload: payload,
-              }],
-            }, {
-              title: title,
-              image_url: image_url,
-              buttons: [{
-                type: "postback",
-                title: "Call Postback",
-                payload: payload + "1",
-              }]
-            }]
-          }
-        }
-
-      }
-
-    };
-    callSendAPI(messageData);
-  }
-
-  function receivedMessage(event, textMsg) {
-    // Putting a stub for now, we'll expand it in the following steps
-    var messageData = {
-      recipient: {
-        id: event.sender.id
-      },
-      message: {
-        "attachment": {
-          "type": "template",
-          "payload": {
-            "template_type": "button",
-            "text": textMsg,
-            "buttons": [{
-              "type": "postback",
-              "title": "Got it",
-              "payload": "USER_DEFINED_PAYLOAD"
-            }]
-          }
-        }
-      }
-    };
-    callSendAPI(messageData);
-    //console.log("Message data: ", event.message);
-  }
-
-  function callSendAPI(messageData) {
-    request({
-      url: "https://graph.facebook.com/v2.6/me/messages",
-      qs: {
-        access_token: process.env.FACEBOOK_TOKEN
-      },
-      method: "POST",
-      json: messageData
-    }, function(error, response, body) {
-      if (!error && response.statusCode == 200) {
-        var recipientId = body.recipient_id;
-        var messageId = body.message_id;
-
-        console.log("Successfully sent generic message with id %s to recipient %s",
-          messageId, recipientId);
-      } else {
-        console.error("Unable to send message.");
-        //console.error(response);
-        //console.error(error);
-      }
-      console.log("hello");
-
-
-    });
-
-  }
 }
