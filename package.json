@@ -17,6 +17,7 @@
     "mongoose": "^4.10.4",
     "nodemon": "^1.11.0",
     "request": "^2.81.0",
-    "require": "^2.4.20"
+    "require": "^2.4.20",
+    "underscore": "^1.8.3"
   }
 }

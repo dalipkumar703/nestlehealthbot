@@ -6,6 +6,7 @@ var dotenv = require('dotenv');
 var api = require('./api.js');
 var User = require('../models/user.js');
 var Bot = require('../models/bot.js');
+var _=require('underscore'); 
 var textMsg;
 var userName;
 var noOfUser;
@@ -129,7 +130,7 @@ module.exports = function(app) {
 
               //	User({user_id:event.sender.id,name:})
 
-              user=User.findOne({
+              User.findOne({
                 user_id: event.sender.id
               }).exec(function(err, result) {
                 if (!err) {
@@ -137,17 +138,14 @@ module.exports = function(app) {
                   //textMsg = event.message.text + " " + result.name;
                   //console.log("function scope textMsg:", textMsg);
                   //receivedMessage(event, textMsg)
-                return result;
+                 console.log("length of user:",_.size(result));
+
 								} else {
                   // error handling
                   console.log("error in find command");
                 };
               });
-							user.then(function(data){
-							    checkData=data;
-							},function(error){
-								console.log("user find error in promise");
-							});
+
 
              console.log("user detail:",checkData);
             }
