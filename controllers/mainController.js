@@ -1,5 +1,6 @@
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
+var apiai=require('apiai');
 mongoose.Promise = require('bluebird');
 var request = require('request');
 var dotenv = require('dotenv');
@@ -14,6 +15,8 @@ var noOfUser;
 var checkData;
 var user;
 dotenv.load();
+//console.log(process.env.API_AI_CLIENT);
+var apiapp = apiai(process.env.API_AI_CLIENT);
 var db = process.env.DB_URL;
 console.log(db);
 mongoose.connect(db);
@@ -25,7 +28,7 @@ module.exports = function(app) {
   // parse application/json
   app.use(bodyParser.json())
   //api calls
-  app.get('/user', api.post);
+  //app.get('/user', api.post);
   app.get('/webhook', function(req, res) {
     if (req.query['hub.mode'] === 'subscribe' &&
       req.query['hub.verify_token'] === process.env.HUB_VERIFY) {
@@ -53,7 +56,7 @@ module.exports = function(app) {
         entry.messaging.forEach(function(event) {
 
           if (event.postback) {
-            if (event.postback.payload === "USER_DEFINED_PAYLOAD") {
+            if (event.postback.payload === "HI_GOT_IT") {
               var botmessage = Bot.find({}).exec(function(err, result) {
                 if (!err) {
                   // handle result
@@ -79,7 +82,23 @@ module.exports = function(app) {
             }
           } else if (event.message && event.message.attachments) {
             console.log("message with attachments");
-          } else if (event.message && event.message.text) {
+
+
+                   let apiai = apiapp.textRequest("How are you?", {
+                    sessionId: 'tabby_cat' // use any arbitrary id
+                  });
+                  apiai.on('response', (response) => {
+                     // Got a response from api.ai. Let's POST to Facebook Messenger
+                     let aiText = response.result.fulfillment.speech;
+                     console.log("Api ai reply:",aiText);
+                   });
+
+                   apiai.on('error', (error) => {
+                     console.log("error in api ai:",error);
+                   });
+
+
+                      } else if (event.message && event.message.text) {
             // message is quick reply type
             if (event.message.quick_reply) {
 
