@@ -7,6 +7,8 @@ var dotenv = require('dotenv');
 var api = require('./api.js');
 var User = require('../models/user.js');
 var Bot = require('../models/bot.js');
+var ReplyWithAttachments=require('../models/reply_with_attachments.js');
+var ReplyWithPostback=require('../models/b_type_postback.js');
 var functionController = require('./functionController.js');
 var _ = require('underscore');
 var textMsg;
@@ -14,6 +16,7 @@ var userName;
 var noOfUser;
 var checkData;
 var user;
+var replyMessageWithAttachments;
 dotenv.load();
 //console.log(process.env.API_AI_CLIENT);
 var apiapp = apiai(process.env.API_AI_CLIENT);
@@ -56,7 +59,8 @@ module.exports = function(app) {
         entry.messaging.forEach(function(event) {
 
           if (event.postback) {
-            if (event.postback.payload === "HI_GOT_IT") {
+            if (event.postback.payload === "GOT_IT") {
+/*
               var botmessage = Bot.find({}).exec(function(err, result) {
                 if (!err) {
                   // handle result
@@ -72,9 +76,23 @@ module.exports = function(app) {
                   console.log("error in find command");
                 };
               });
-
-              //console.log("bot database reply:",botmessage);
-              //  replyWithAttachments(event.sender.id);
+*/
+           var replyMessage=ReplyWithAttachments.find({payload_for:"GOT_IT"}).exec(function(err,result){
+              if(!err)
+              {
+                return result;
+              }
+              else
+              {
+                console.log("error in reply with attachemnts");
+              }
+           });
+           replyMessage.then(function(data){
+          replyMessage= data;
+           },function(err){
+             console.log("error in reply with attachemnts in promise");
+           });
+              console.log("reply with attachemnts in promise:",replyMessage);
             }
             if (event.postback.payload === "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN") {
               //quickReply(event.sender.id);
@@ -84,8 +102,8 @@ module.exports = function(app) {
             console.log("message with attachments");
 
 
-                   let apiai = apiapp.textRequest("How are you?", {
-                    sessionId: 'tabby_cat' // use any arbitrary id
+                   let apiai = apiapp.textRequest("Hello", {
+                    sessionId: '5d8d89a6-aa6f-4f56-947a-4003e53277c4' // use any arbitrary id
                   });
                   apiai.on('response', (response) => {
                      // Got a response from api.ai. Let's POST to Facebook Messenger
@@ -96,7 +114,7 @@ module.exports = function(app) {
                    apiai.on('error', (error) => {
                      console.log("error in api ai:",error);
                    });
-
+                  apiai.end();
 
                       } else if (event.message && event.message.text) {
             // message is quick reply type

@@ -76,7 +76,7 @@ exports.receivedMessage = function(event, textMsg) {
           "buttons": [{
             "type": "postback",
             "title": "Got it",
-            "payload": "HI_GOT_IT"
+            "payload": "GOT_IT"
           }]
         }
       }
