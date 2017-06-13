@@ -5,6 +5,7 @@ var dotenv = require('dotenv');
 var api = require('./api.js');
 var User= require('../models/user.js');
 var textMsg;
+var text;
 dotenv.load();
 var db=process.env.DB_URL;
 console.log(db);
@@ -84,13 +85,14 @@ app.use(bodyParser.json())
 	 };
  });
  textMsg.then(function(data){
-	 textMsg=data.name;
+	 text=data;
+   console.log("text message:",text);
  },function(error){
 	 console.log("error found promise");
  });
 
-
-    receivedMessage(event,textMsg)
+       console.log("text message:",text);
+    receivedMessage(event,text)
         }
       });
     });
@@ -104,14 +106,14 @@ app.use(bodyParser.json())
   }
 });
 
-function receivedMessage(event,textMsg) {
+function receivedMessage(event,text) {
   // Putting a stub for now, we'll expand it in the following steps
 	var messageData = {
 	 recipient: {
 		 id: event.sender.id
 	 },
 	 message: {
-		 text: textMsg
+		 text: text
 	 }
  };
 	request({
