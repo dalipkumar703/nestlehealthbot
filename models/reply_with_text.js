@@ -1,11 +1,11 @@
 var mongoose = require('mongoose'),
   Schema = mongoose.Schema;
 
-module.exports =mongoose.model('QuickReply',
+module.exports =mongoose.model('ReplyWithText',
                new Schema({
-                 title:String,
+                 text:String,
                  payload:String,
                  payload_for:String
 
                }),
-               'quick_reply');
+               'reply_with_text');

@@ -7,6 +7,8 @@ module.exports =mongoose.model('ReplyWithAttachments',
                  subtitle:String,
                  image_url:String,
                  button_type: String,
-                 payload_for:String
+                 payload_for:String,
+                 b_t_p_title:String,
+                 b_t_p_payload:String
                }),
                'ReplyWithAttachments');

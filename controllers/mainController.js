@@ -7,8 +7,10 @@ var dotenv = require('dotenv');
 var api = require('./api.js');
 var User = require('../models/user.js');
 var Bot = require('../models/bot.js');
+var QuickReply=require('../models/quick_reply.js');
+var ReplyWithText=require('../models/reply_with_text.js');
 var ReplyWithAttachments=require('../models/reply_with_attachments.js');
-var ReplyWithPostback=require('../models/b_type_postback.js');
+var QuickReplyText=require('../models/quick_reply_text.js');
 var functionController = require('./functionController.js');
 var _ = require('underscore');
 var textMsg;
@@ -16,6 +18,10 @@ var userName;
 var noOfUser;
 var checkData;
 var user;
+var image_url=[];
+var title=[];
+var payload=[];
+var button_title=[];
 var replyMessageWithAttachments;
 dotenv.load();
 //console.log(process.env.API_AI_CLIENT);
@@ -77,26 +83,62 @@ module.exports = function(app) {
                 };
               });
 */
-           var replyMessage=ReplyWithAttachments.find({payload_for:"GOT_IT"}).exec(function(err,result){
+          ReplyWithAttachments.find({payload_for:"GOT_IT"}).exec(function(err,result){
               if(!err)
               {
-                return result;
+                console.log("length of payload:",_.size(result));
+                console.log("length of payload 1:",result[1]);
+
+                for(var i=0;i<_.size(result);i++)
+                {
+                    image_url[i]=result[i].image_url;
+                    title[i]=result[i].title;
+                    payload[i]=result[i].b_t_p_payload;
+                    button_title[i]=result[i].b_t_p_title;
+
+                }
+
+             functionController.replyWithAttachments(event.sender.id, image_url, title, payload, button_title);
               }
               else
               {
                 console.log("error in reply with attachemnts");
               }
            });
-           replyMessage.then(function(data){
-          replyMessage= data;
-           },function(err){
-             console.log("error in reply with attachemnts in promise");
-           });
-              console.log("reply with attachemnts in promise:",replyMessage);
+
             }
-            if (event.postback.payload === "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN") {
-              //quickReply(event.sender.id);
-              functionController.quickReply(event.sender.id);
+            if(event.postback.payload==="GOT_IT_RUNNING_STATUS")
+            {
+
+            }
+            if (event.postback.payload === "GET_STARTED") {
+              //quickReply(event.sender.id);TEXT,TITLE,PAYLOAD
+              //functionController.quickReply(event.sender.id);
+              QuickReply.find({payload_for:"GET_STARTED"}).exec(function(err,result){
+                if(!err)
+                {
+                //  console.log("quick reply result:",result);
+                for(var i=0;i<_.size(result);i++)
+                {
+                  title[i]=result[i].title;
+                  payload[i]=result[i].payload;
+                }
+                 QuickReplyText.find({payload_for:"GET_STARTED"}).exec(function(err,result){
+                   if(!err)
+                   {
+                  //console.log("quick reply with text:",result[0]);
+                   functionController.quickReply(event.sender.id,title,payload,result[0].text);
+                   }
+                   else {
+                     console.log("error in quick reply with text");
+                   }
+                 });
+                }
+                else
+                {
+                  console.log("error in quick reply data fetching.");
+                }
+              })
             }
           } else if (event.message && event.message.attachments) {
             console.log("message with attachments");
@@ -120,9 +162,24 @@ module.exports = function(app) {
             // message is quick reply type
             if (event.message.quick_reply) {
 
-              if (event.message.quick_reply.payload === "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN") {
+              if (event.message.quick_reply.payload === "NOT_DECIDED"||"BEGINNER"||"HALF_MARATHON"||"FULL_MARATHON") {
                 //quickReply(event.sender.id);
-                functionController.quickReply(event.sender.id);
+              //functionController.quickReply(event.sender.id);
+              ReplyWithText.find({$or:[{payload_for:"NOT_DECIDED"},
+                                       {payload_for:"BEGINNER"},
+                                       {payload_for:"HALF_MARATHON"},
+                                       {payload_for:"FULL_MARATHON"}
+                                     ]}).exec(function(err,result){
+                                       if(!err){
+                                       console.log("reply with text result:",result);
+                                            title[0]="Got it";
+                                       functionController.receivedMessage(event,title ,result[0].payload,result[0].text);
+                                     }
+                                     else
+                                     {
+                                       console.log("error in reply with text result");
+                                     }
+                                   });
               }
             } else {
               //message is text type
@@ -147,6 +204,8 @@ module.exports = function(app) {
                       //console.log("function scope textMsg:", textMsg);
                       //receivedMessage(event, textMsg)
                       //console.log("length of user:",_.size(result));
+                      title[0]="Got it";
+                      payload[0]="GOT_IT";
                       if (_.size(result) == 0) {
                         User({
                           user_id: event.sender.id,
@@ -158,13 +217,14 @@ module.exports = function(app) {
                           if (err) throw err;
                           console.log("user store:", data);
                         });
+
                         textMsg = event.message.text + " " + userName;
-                        //receivedMessage(event, textMsg);
-                        functionController.receivedMessage(event, textMsg);
+                        //receivedMessage(event, textMsg);title,payload
+                        functionController.receivedMessage(event, title,payload,textMsg);
                       } else {
                         textMsg = event.message.text + " " + result.name;
                         //receivedMessage(event, textMsg);
-                        functionController.receivedMessage(event, textMsg);
+                        functionController.receivedMessage(event,title,payload, textMsg);
                       }
                     } else {
                       // error handling

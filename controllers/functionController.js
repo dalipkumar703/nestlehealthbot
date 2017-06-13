@@ -1,22 +1,32 @@
 var request = require('request');
 
 
-exports.quickReply = function(recipient) {
+exports.quickReply = function(recipient,title,payload,text) {
   var messageData = {
     recipient: {
       id: recipient
     },
     message: {
-      "text": "Pick a color:",
+      "text": text,
       "quick_replies": [{
           "content_type": "text",
-          "title": "Red",
-          "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
+          "title": title[0],
+          "payload": payload[0]
         },
         {
           "content_type": "text",
-          "title": "Green",
-          "payload": "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+          "title": title[1],
+          "payload": payload[1]
+        },
+        {
+          "content_type": "text",
+          "title": title[2],
+          "payload": payload[2]
+        },
+        {
+          "content_type": "text",
+          "title": title[3],
+          "payload": payload[3]
         }
       ]
     }
@@ -36,20 +46,20 @@ exports.replyWithAttachments = function(recipient, image_url, title, payload, bu
         payload: {
           template_type: "generic",
           elements: [{
-            title: title,
-            image_url: image_url,
+            title: title[0],
+            image_url: image_url[0],
             buttons: [{
               type: "postback",
-              title: "Call Postback",
-              payload: payload,
+              title: button_title[0],
+              payload: payload[0],
             }],
           }, {
-            title: title,
-            image_url: image_url,
+            title: title[1],
+            image_url: image_url[1],
             buttons: [{
               type: "postback",
-              title: "Call Postback",
-              payload: payload + "1",
+              title: button_title[1],
+              payload: payload[1],
             }]
           }]
         }
@@ -61,7 +71,7 @@ exports.replyWithAttachments = function(recipient, image_url, title, payload, bu
   this.callSendAPI(messageData);
 }
 
-exports.receivedMessage = function(event, textMsg) {
+exports.receivedMessage = function(event,title,payload, textMsg) {
   // Putting a stub for now, we'll expand it in the following steps
   var messageData = {
     recipient: {
@@ -75,8 +85,8 @@ exports.receivedMessage = function(event, textMsg) {
           "text": textMsg,
           "buttons": [{
             "type": "postback",
-            "title": "Got it",
-            "payload": "GOT_IT"
+            "title": title[0],
+            "payload": payload[0]
           }]
         }
       }
