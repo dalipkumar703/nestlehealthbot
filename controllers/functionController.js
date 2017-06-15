@@ -1,4 +1,5 @@
 var request = require('request');
+var _ = require('underscore');
 exports.replyWithTwoPayload=function(event, title, payload, textMsg)
 {
   var messageData = {
@@ -186,9 +187,13 @@ exports.callReplyWithAttachments=function(result,err,event){
   {
     console.log("length of payload:",_.size(result));
     console.log("length of payload 1:",result[1]);
-
+    var image_url=[];
+    var title=[];
+    var payload=[];
+    var button_title=[];
     for(var i=0;i<_.size(result);i++)
     {
+
         image_url[i]=result[i].image_url;
         title[i]=result[i].title;
         payload[i]=result[i].b_t_p_payload;
@@ -196,7 +201,7 @@ exports.callReplyWithAttachments=function(result,err,event){
 
     }
 
- functionController.replyWithAttachments(event.sender.id, image_url, title, payload, button_title);
+ this.replyWithAttachments(event.sender.id, image_url, title, payload, button_title);
   }
   else
   {

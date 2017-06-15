@@ -89,22 +89,8 @@ module.exports = function(app) {
               ReplyWithAttachments.find({
                 payload_for: "GOT_IT"
               }).exec(function(err, result) {
-                if (!err) {
-                  console.log("length of payload:", _.size(result));
-                  console.log("length of payload 1:", result[1]);
 
-                  for (var i = 0; i < _.size(result); i++) {
-                    image_url[i] = result[i].image_url;
-                    title[i] = result[i].title;
-                    payload[i] = result[i].b_t_p_payload;
-                    button_title[i] = result[i].b_t_p_title;
-
-                  }
-
-                  functionController.replyWithAttachments(event.sender.id, image_url, title, payload, button_title);
-                } else {
-                  console.log("error in reply with attachemnts");
-                }
+              functionController.callReplyWithAttachments(result,err,event);
               });
 
             }
@@ -112,7 +98,7 @@ module.exports = function(app) {
               console.log("got it running status");
               functionController.replyWithPlainText(event, process.env.ASK_FOR_AGE);
             }
-            if (event.postback.payload === "VERY_ACTIVE_EXERCISE" || "MODERATE_EXERCISE" || "LIGHTLY_EXERCISE" || "SEDENTRY_EXERCISE") {
+            if (event.postback.payload === "VERY_ACTIVE_EXERCISE" ||event.postback.payload === "MODERATE_EXERCISE" || event.postback.payload ==="LIGHTLY_EXERCISE" || event.postback.payload ==="SEDENTRY_EXERCISE") {
               console.log("exercise type");
               var exercise;
               if (event.postback.payload === "VERY_ACTIVE_EXERCISE") {
@@ -177,22 +163,8 @@ module.exports = function(app) {
               ReplyWithAttachments.find({
                 payload_for: "USER_DETAIL_CONFIRM"
               }).exec(function(err, result) {
-                if (!err) {
-                  console.log("length of payload:", _.size(result));
-                  console.log("length of payload 1:", result[1]);
 
-                  for (var i = 0; i < _.size(result); i++) {
-                    image_url[i] = result[i].image_url;
-                    title[i] = result[i].title;
-                    payload[i] = result[i].b_t_p_payload;
-                    button_title[i] = result[i].b_t_p_title;
-
-                  }
-
-                  functionController.replyWithAttachments(event.sender.id, image_url, title, payload, button_title);
-                } else {
-                  console.log("error in reply with attachemnts");
-                }
+                functionController.callReplyWithAttachments(result,err,event);
               });
               PlainText.findOne({
                 payload_for: "USER_DETAIL_CONFIRM"
@@ -287,7 +259,7 @@ module.exports = function(app) {
             } else {
               //message is text type
               request({
-                url: "https://graph.facebook.com/v2.6/1215082925284543",
+                url: "https://graph.facebook.com/v2.6/"+event.sender.id,
                 qs: {
                   access_token: process.env.FACEBOOK_TOKEN,
                 },
@@ -327,9 +299,11 @@ module.exports = function(app) {
                           var num = textmsg.match(/\d/g);
                           console.log(num);
                         } else {
-                          textMsg = event.message.text + " " + userName;
+                          textMsg = event.message.text + " " + userName+", get fit with Nestle, your companion to good health.";
                           //receivedMessage(event, textMsg);title,payload
-                          functionController.receivedMessage(event, title, payload, textMsg);
+                          functionController.replyWithPlainText(event,textMsg);
+                          textMsg1="You need a variety of nutrients to strengthen your performance and endurance. Let's guide you on daily nutrition. To start over type \"Hi\" any time.";
+                          functionController.receivedMessage(event, title, payload, textMsg1);
 
                         }
 
@@ -406,9 +380,12 @@ module.exports = function(app) {
                             }
                           });
                         } else {
-                          textMsg = event.message.text + " " + result.name;
-                          //receivedMessage(event, textMsg);
-                          functionController.receivedMessage(event, title, payload, textMsg);
+                        
+                          textMsg = event.message.text + " " + userName+", get fit with Nestle, your companion to good health.";
+                          //receivedMessage(event, textMsg);title,payload
+                          functionController.replyWithPlainText(event,textMsg);
+                          textMsg1="You need a variety of nutrients to strengthen your performance and endurance. Let's guide you on daily nutrition. To start over type \"Hi\" any time.";
+                          functionController.receivedMessage(event, title, payload, textMsg1);
                         }
 
                       }
