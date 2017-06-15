@@ -1,16 +1,19 @@
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
-var apiai=require('apiai');
+var apiai = require('apiai');
+var Regex = require('regex');
 mongoose.Promise = require('bluebird');
 var request = require('request');
 var dotenv = require('dotenv');
 var api = require('./api.js');
 var User = require('../models/user.js');
 var Bot = require('../models/bot.js');
-var QuickReply=require('../models/quick_reply.js');
-var ReplyWithText=require('../models/reply_with_text.js');
-var ReplyWithAttachments=require('../models/reply_with_attachments.js');
-var QuickReplyText=require('../models/quick_reply_text.js');
+var QuickReply = require('../models/quick_reply.js');
+var UserPersonal = require('../models/user_personal.js');
+var ReplyWithText = require('../models/reply_with_text.js');
+var ReplyWithAttachments = require('../models/reply_with_attachments.js');
+var QuickReplyText = require('../models/quick_reply_text.js');
+var PlainText = require('../models/reply_with_plain_text.js');
 var functionController = require('./functionController.js');
 var _ = require('underscore');
 var textMsg;
@@ -18,10 +21,10 @@ var userName;
 var noOfUser;
 var checkData;
 var user;
-var image_url=[];
-var title=[];
-var payload=[];
-var button_title=[];
+var image_url = [];
+var title = [];
+var payload = [];
+var button_title = [];
 var replyMessageWithAttachments;
 dotenv.load();
 //console.log(process.env.API_AI_CLIENT);
@@ -66,76 +69,166 @@ module.exports = function(app) {
 
           if (event.postback) {
             if (event.postback.payload === "GOT_IT") {
-/*
-              var botmessage = Bot.find({}).exec(function(err, result) {
+              /*
+                            var botmessage = Bot.find({}).exec(function(err, result) {
+                              if (!err) {
+                                // handle result
+                                //console.log("bot message :",result[0].image_url);
+                                var image_url = result[0].image_url;
+                                var title = result[0].subtitle;
+                                var payload = "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN";
+                                var button_title = result[0].subtitle;
+                                //  replyWithAttachments(event.sender.id, image_url, title, payload, button_title);
+                                functionController.replyWithAttachments(event.sender.id, image_url, title, payload, button_title);
+                              } else {
+                                // error handling
+                                console.log("error in find command");
+                              };
+                            });
+              */
+              ReplyWithAttachments.find({
+                payload_for: "GOT_IT"
+              }).exec(function(err, result) {
                 if (!err) {
-                  // handle result
-                  //console.log("bot message :",result[0].image_url);
-                  var image_url = result[0].image_url;
-                  var title = result[0].subtitle;
-                  var payload = "DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN";
-                  var button_title = result[0].subtitle;
-                  //  replyWithAttachments(event.sender.id, image_url, title, payload, button_title);
+                  console.log("length of payload:", _.size(result));
+                  console.log("length of payload 1:", result[1]);
+
+                  for (var i = 0; i < _.size(result); i++) {
+                    image_url[i] = result[i].image_url;
+                    title[i] = result[i].title;
+                    payload[i] = result[i].b_t_p_payload;
+                    button_title[i] = result[i].b_t_p_title;
+
+                  }
+
                   functionController.replyWithAttachments(event.sender.id, image_url, title, payload, button_title);
                 } else {
-                  // error handling
-                  console.log("error in find command");
-                };
-              });
-*/
-          ReplyWithAttachments.find({payload_for:"GOT_IT"}).exec(function(err,result){
-              if(!err)
-              {
-                console.log("length of payload:",_.size(result));
-                console.log("length of payload 1:",result[1]);
-
-                for(var i=0;i<_.size(result);i++)
-                {
-                    image_url[i]=result[i].image_url;
-                    title[i]=result[i].title;
-                    payload[i]=result[i].b_t_p_payload;
-                    button_title[i]=result[i].b_t_p_title;
-
+                  console.log("error in reply with attachemnts");
                 }
-
-             functionController.replyWithAttachments(event.sender.id, image_url, title, payload, button_title);
-              }
-              else
-              {
-                console.log("error in reply with attachemnts");
-              }
-           });
+              });
 
             }
-            if(event.postback.payload==="GOT_IT_RUNNING_STATUS")
-            {
+            if (event.postback.payload === "GOT_IT_RUNNING_STATUS" || event.postback.payload === "EDIT_USER_DETAIL") {
+              console.log("got it running status");
+              functionController.replyWithPlainText(event, process.env.ASK_FOR_AGE);
+            }
+            if (event.postback.payload === "VERY_ACTIVE_EXERCISE" || "MODERATE_EXERCISE" || "LIGHTLY_EXERCISE" || "SEDENTRY_EXERCISE") {
+              console.log("exercise type");
+              var exercise;
+              if (event.postback.payload === "VERY_ACTIVE_EXERCISE") {
+                exercise = "Active";
+              } {
+                if (event.postback.paylaod === "MODERATE_EXERCISE")
+                  exercise = "Moderately_Active"
+              }
+              if (event.postback.paylaod === "LIGHTLY_EXERCISE") {
+                exercise = "Lightly_Active";
+              }
+              if (event.postback.payload === "SEDENTRY_EXERCISE") {
+                exercise = "Sedentary";
+              }
+              User.findOne({
+                user_id: event.sender.id
+              }).exec(function(err, result) {
+                if (!err) {
 
+                  UserPersonal.findOne({
+                    user_id: event.sender.id
+                  }).exec(function(err, data) {
+                    if (!err) {
+                      console.log("data:", data);
+                      console.log("user data:", result.gender);
+                      request({
+                        url: "http://54.236.50.54/1.2/Calculatebmr?gender=" + result.gender + "&height=" + data.height + "&age=" + data.age + "&userId=" + event.sender.id + "&weight=" + data.weight + "&exerciseLevel=" + exercise,
+                        method: "GET"
+                      }, function(error, response, body) {
+                        if (!error) {
+                          var resultExercise = JSON.parse(response.body);
+                          console.log("bmr = " + resultExercise.set_variables.bmr + "Calories");
+                          msg = "Great! You need " + resultExercise.set_variables.bmr + " calories per day to maintain your weight.";
+                          title[0] = "Next";
+                          payload[0] = "SHOWED_CALORIE";
+                          functionController.receivedMessage(event, title, payload, msg);
+                        } else {
+                          console.error("Unable to send message.");
+                          //console.error(response);
+                          console.error(error);
+                        }
+                        console.log("hello");
+
+
+                      });
+                    } else {
+                      console.log("error in  user personal");
+                    }
+
+
+                  });
+                } else {
+                  console.log("error in user model");
+                }
+
+              });
+
+            }
+            if (event.postback.payload === "USER_DETAIL_CONFIRM") {
+              //console.log("user detail confirm");
+
+              ReplyWithAttachments.find({
+                payload_for: "USER_DETAIL_CONFIRM"
+              }).exec(function(err, result) {
+                if (!err) {
+                  console.log("length of payload:", _.size(result));
+                  console.log("length of payload 1:", result[1]);
+
+                  for (var i = 0; i < _.size(result); i++) {
+                    image_url[i] = result[i].image_url;
+                    title[i] = result[i].title;
+                    payload[i] = result[i].b_t_p_payload;
+                    button_title[i] = result[i].b_t_p_title;
+
+                  }
+
+                  functionController.replyWithAttachments(event.sender.id, image_url, title, payload, button_title);
+                } else {
+                  console.log("error in reply with attachemnts");
+                }
+              });
+              PlainText.findOne({
+                payload_for: "USER_DETAIL_CONFIRM"
+              }).exec(function(err, data) {
+                if (!err) {
+                  console.log("data from user detail confirm", data);
+                  functionController.replyWithPlainText(event, data.text);
+                } else {
+                  console.log("err in user detail confirm");
+                }
+              });
+              //functionController.replyWithAttachments(event.sender.id, image_url, title, payload, button_title);
             }
             if (event.postback.payload === "GET_STARTED") {
               //quickReply(event.sender.id);TEXT,TITLE,PAYLOAD
               //functionController.quickReply(event.sender.id);
-              QuickReply.find({payload_for:"GET_STARTED"}).exec(function(err,result){
-                if(!err)
-                {
-                //  console.log("quick reply result:",result);
-                for(var i=0;i<_.size(result);i++)
-                {
-                  title[i]=result[i].title;
-                  payload[i]=result[i].payload;
-                }
-                 QuickReplyText.find({payload_for:"GET_STARTED"}).exec(function(err,result){
-                   if(!err)
-                   {
-                  //console.log("quick reply with text:",result[0]);
-                   functionController.quickReply(event.sender.id,title,payload,result[0].text);
-                   }
-                   else {
-                     console.log("error in quick reply with text");
-                   }
-                 });
-                }
-                else
-                {
+              QuickReply.find({
+                payload_for: "GET_STARTED"
+              }).exec(function(err, result) {
+                if (!err) {
+                  //  console.log("quick reply result:",result);
+                  for (var i = 0; i < _.size(result); i++) {
+                    title[i] = result[i].title;
+                    payload[i] = result[i].payload;
+                  }
+                  QuickReplyText.find({
+                    payload_for: "GET_STARTED"
+                  }).exec(function(err, result) {
+                    if (!err) {
+                      //console.log("quick reply with text:",result[0]);
+                      functionController.quickReply(event.sender.id, title, payload, result[0].text);
+                    } else {
+                      console.log("error in quick reply with text");
+                    }
+                  });
+                } else {
                   console.log("error in quick reply data fetching.");
                 }
               })
@@ -144,42 +237,52 @@ module.exports = function(app) {
             console.log("message with attachments");
 
 
-                   let apiai = apiapp.textRequest("Hello", {
-                    sessionId: '5d8d89a6-aa6f-4f56-947a-4003e53277c4' // use any arbitrary id
-                  });
-                  apiai.on('response', (response) => {
-                     // Got a response from api.ai. Let's POST to Facebook Messenger
-                     let aiText = response.result.fulfillment.speech;
-                     console.log("Api ai reply:",aiText);
-                   });
+            let apiai = apiapp.textRequest("Hello", {
+              sessionId: '5d8d89a6-aa6f-4f56-947a-4003e53277c4' // use any arbitrary id
+            });
+            apiai.on('response', (response) => {
+              // Got a response from api.ai. Let's POST to Facebook Messenger
+              let aiText = response.result.fulfillment.speech;
+              console.log("Api ai reply:", aiText);
+            });
 
-                   apiai.on('error', (error) => {
-                     console.log("error in api ai:",error);
-                   });
-                  apiai.end();
+            apiai.on('error', (error) => {
+              console.log("error in api ai:", error);
+            });
+            apiai.end();
 
-                      } else if (event.message && event.message.text) {
+          } else if (event.message && event.message.text) {
             // message is quick reply type
             if (event.message.quick_reply) {
 
-              if (event.message.quick_reply.payload === "NOT_DECIDED"||"BEGINNER"||"HALF_MARATHON"||"FULL_MARATHON") {
+              if (event.message.quick_reply.payload === "NOT_DECIDED" || "BEGINNER" || "HALF_MARATHON" || "FULL_MARATHON") {
                 //quickReply(event.sender.id);
-              //functionController.quickReply(event.sender.id);
-              ReplyWithText.find({$or:[{payload_for:"NOT_DECIDED"},
-                                       {payload_for:"BEGINNER"},
-                                       {payload_for:"HALF_MARATHON"},
-                                       {payload_for:"FULL_MARATHON"}
-                                     ]}).exec(function(err,result){
-                                       if(!err){
-                                       console.log("reply with text result:",result);
-                                            title[0]="Got it";
-                                       functionController.receivedMessage(event,title ,result[0].payload,result[0].text);
-                                     }
-                                     else
-                                     {
-                                       console.log("error in reply with text result");
-                                     }
-                                   });
+                //functionController.quickReply(event.sender.id);
+                ReplyWithText.find({
+                  $or: [{
+                      payload_for: "NOT_DECIDED"
+                    },
+                    {
+                      payload_for: "BEGINNER"
+                    },
+                    {
+                      payload_for: "HALF_MARATHON"
+                    },
+                    {
+                      payload_for: "FULL_MARATHON"
+                    }
+                  ]
+                }).exec(function(err, result) {
+                  if (!err) {
+                    console.log("reply with text result:", result[0].payload);
+                    title[0] = "Got it";
+                    payload[0] = result[0].payload;
+                    functionController.receivedMessage(event, title, payload, result[0].text);
+
+                  } else {
+                    console.log("error in reply with text result");
+                  }
+                });
               }
             } else {
               //message is text type
@@ -204,8 +307,9 @@ module.exports = function(app) {
                       //console.log("function scope textMsg:", textMsg);
                       //receivedMessage(event, textMsg)
                       //console.log("length of user:",_.size(result));
-                      title[0]="Got it";
-                      payload[0]="GOT_IT";
+                      title[0] = "Got it";
+                      payload[0] = "GOT_IT";
+                      var re = new Regex(/[1-99][Age]+/);
                       if (_.size(result) == 0) {
                         User({
                           user_id: event.sender.id,
@@ -217,14 +321,96 @@ module.exports = function(app) {
                           if (err) throw err;
                           console.log("user store:", data);
                         });
+                        if (/[1-9][0-9]?age/i.test(event.message.text)) {
+                          //console.log("age is correct");
+                          var textmsg = event.message.text;
+                          var num = textmsg.match(/\d/g);
+                          console.log(num);
+                        } else {
+                          textMsg = event.message.text + " " + userName;
+                          //receivedMessage(event, textMsg);title,payload
+                          functionController.receivedMessage(event, title, payload, textMsg);
 
-                        textMsg = event.message.text + " " + userName;
-                        //receivedMessage(event, textMsg);title,payload
-                        functionController.receivedMessage(event, title,payload,textMsg);
+                        }
+
                       } else {
-                        textMsg = event.message.text + " " + result.name;
-                        //receivedMessage(event, textMsg);
-                        functionController.receivedMessage(event,title,payload, textMsg);
+
+                        if (/[1-9][0-9]?age/i.test(event.message.text)) {
+                          //save age of user
+                          var textmsg = event.message.text;
+                          var num = textmsg.match(/\d/g);
+                          numb = num.join("");
+                          //  console.log(numb);
+                          UserPersonal({
+                            user_id: event.sender.id,
+                            age: numb
+                          }).save(function(err, data) {
+                            if (!err) {
+                              //console.log("age is saved in database.");
+                              functionController.replyWithPlainText(event, process.env.ASK_FOR_HEIGHT);
+                            } else {
+                              console.log("age is not saved.");
+                            }
+                          });
+
+                        } else if (/[1-9][0-9]?feet,?[1-9]?[0-9]?i?n?c?h?e?s?/i.test(event.message.text)) {
+                          var textmsg = event.message.text;
+                          var num = textmsg.match(/\d/g);
+                          numb = num.join("");
+                          UserPersonal.update({
+                            user_id: event.sender.id
+                          }, {
+                            $set: {
+                              height: numb
+                            }
+                          }).exec(function(err, data) {
+                            if (!err) {
+                              //console.log("height is saved in database.");
+                              functionController.replyWithPlainText(event, process.env.ASK_FOR_WEIGHT);
+                            } else {
+                              console.log("height is not saved.");
+                            }
+                          });
+                        } else if (/[1-9][0-9]?[0-9]?Kg/i.test(event.message.text)) {
+                          //console.log("weight is received");
+                          var textmsg = event.message.text;
+                          var num = textmsg.match(/\d/g);
+                          numb = num.join("");
+                          UserPersonal.update({
+                            user_id: event.sender.id
+                          }, {
+                            $set: {
+                              weight: numb
+                            }
+                          }).exec(function(err, data) {
+                            if (!err) {
+                              UserPersonal.findOne({
+                                user_id: event.sender.id
+                              }).exec(function(err, data) {
+                                if (!err) {
+                                  textMsg = "You entered - Age(" + data.age + "), Weight (" + data.weight + "), Height (" + data.height + ")";
+                                  title[0] = "OK";
+                                  title[1] = "Edit";
+                                  payload[0] = "USER_DETAIL_CONFIRM";
+                                  payload[1] = "EDIT_USER_DETAIL";
+                                  functionController.replyWithTwoPayload(event, title, payload, textMsg);
+                                } else {
+                                  console.log("problem fetching from user detail.");
+                                }
+                              })
+                              // console.log("weight is saved in database.");
+                              //textMsg=You entered - Age(40), Weight (45), Height (5)
+                              //functionController.replyWithTwoPayload(event,title,payload,textMsg);
+                            } else {
+                              console.log("height is not saved.");
+                            }
+                          });
+                        } else {
+                          textMsg = event.message.text + " " + result.name;
+                          //receivedMessage(event, textMsg);
+                          functionController.receivedMessage(event, title, payload, textMsg);
+                        }
+
                       }
                     } else {
                       // error handling

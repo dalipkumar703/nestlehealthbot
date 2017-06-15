@@ -1,7 +1,35 @@
 var request = require('request');
+exports.replyWithTwoPayload=function(event, title, payload, textMsg)
+{
+  var messageData = {
+    recipient: {
+      id: event.sender.id
+    },
+    message: {
+      "attachment": {
+        "type": "template",
+        "payload": {
+          "template_type": "button",
+          "text": textMsg,
+          "buttons": [{
+            "type": "postback",
+            "title": title[0],
+            "payload": payload[0]
+          },
+        {
+          "type": "postback",
+          "title": title[1],
+          "payload": payload[1]
+        }
+      ]
+        }
+      }
+    }
+  };
+  this.callSendAPI(messageData);
+}
 
-
-exports.quickReply = function(recipient,title,payload,text) {
+exports.quickReply = function(recipient, title, payload, text) {
   var messageData = {
     recipient: {
       id: recipient
@@ -36,6 +64,40 @@ exports.quickReply = function(recipient,title,payload,text) {
 
 //reply with attachments
 exports.replyWithAttachments = function(recipient, image_url, title, payload, button_title) {
+/*  var element=[{
+    title: title[0],
+    image_url: image_url[0],
+    buttons: [{
+      type: "postback",
+      title: button_title[0],
+      payload: payload[0],
+    }],
+  }, {
+    title: title[1],
+    image_url: image_url[1],
+    buttons: [{
+      type: "postback",
+      title: button_title[1],
+      payload: payload[1],
+    }]
+  }];
+  */
+  var element=[];
+  for(var i=0;i<payload.length;i++)
+  {
+    var object ={
+      title:title[i],
+      image_url:image_url[i],
+      buttons:[
+        {
+          type:"postback",
+          title:button_title[i],
+          payload:payload[i]
+        }
+      ]
+    };
+    element.push(object);
+  }
   var messageData = {
     recipient: {
       id: recipient
@@ -45,23 +107,7 @@ exports.replyWithAttachments = function(recipient, image_url, title, payload, bu
         type: "template",
         payload: {
           template_type: "generic",
-          elements: [{
-            title: title[0],
-            image_url: image_url[0],
-            buttons: [{
-              type: "postback",
-              title: button_title[0],
-              payload: payload[0],
-            }],
-          }, {
-            title: title[1],
-            image_url: image_url[1],
-            buttons: [{
-              type: "postback",
-              title: button_title[1],
-              payload: payload[1],
-            }]
-          }]
+          elements: element
         }
       }
 
@@ -71,8 +117,9 @@ exports.replyWithAttachments = function(recipient, image_url, title, payload, bu
   this.callSendAPI(messageData);
 }
 
-exports.receivedMessage = function(event,title,payload, textMsg) {
+exports.receivedMessage = function(event, title, payload, textMsg) {
   // Putting a stub for now, we'll expand it in the following steps
+  console.log("payload", payload[0]);
   var messageData = {
     recipient: {
       id: event.sender.id
@@ -94,6 +141,18 @@ exports.receivedMessage = function(event,title,payload, textMsg) {
   };
   this.callSendAPI(messageData);
   //console.log("Message data: ", event.message);
+}
+exports.replyWithPlainText = function(event, textMsg) {
+  var messageData = {
+    "recipient": {
+      "id": event.sender.id
+    },
+    "message": {
+      "text": textMsg
+    }
+
+  };
+  this.callSendAPI(messageData);
 }
 
 exports.callSendAPI = function(messageData) {
@@ -120,5 +179,28 @@ exports.callSendAPI = function(messageData) {
 
 
   });
+
+}
+exports.callReplyWithAttachments=function(result,err,event){
+  if(!err)
+  {
+    console.log("length of payload:",_.size(result));
+    console.log("length of payload 1:",result[1]);
+
+    for(var i=0;i<_.size(result);i++)
+    {
+        image_url[i]=result[i].image_url;
+        title[i]=result[i].title;
+        payload[i]=result[i].b_t_p_payload;
+        button_title[i]=result[i].b_t_p_title;
+
+    }
+
+ functionController.replyWithAttachments(event.sender.id, image_url, title, payload, button_title);
+  }
+  else
+  {
+    console.log("error in reply with attachemnts");
+  }
 
 }
