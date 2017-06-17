@@ -13,6 +13,7 @@ var UserPersonal = require('../models/user_personal.js');
 var ReplyWithText = require('../models/reply_with_text.js');
 var ReplyWithAttachments = require('../models/reply_with_attachments.js');
 var QuickReplyText = require('../models/quick_reply_text.js');
+var ReplyWithUrl = require('../models/reply_with_url.js');
 var PlainText = require('../models/reply_with_plain_text.js');
 var functionController = require('./functionController.js');
 var _ = require('underscore');
@@ -25,6 +26,8 @@ var image_url = [];
 var title = [];
 var payload = [];
 var button_title = [];
+var button_web_title=[];
+var button_web_url=[];
 var replyMessageWithAttachments;
 dotenv.load();
 //console.log(process.env.API_AI_CLIENT);
@@ -100,17 +103,18 @@ module.exports = function(app) {
             }
             if (event.postback.payload === "VERY_ACTIVE_EXERCISE" ||event.postback.payload === "MODERATE_EXERCISE" || event.postback.payload ==="LIGHTLY_EXERCISE" || event.postback.payload ==="SEDENTRY_EXERCISE") {
               console.log("exercise type");
+              console.log("payload value:",event.postback.payload);
               var exercise;
               if (event.postback.payload === "VERY_ACTIVE_EXERCISE") {
                 exercise = "Active";
-              } {
-                if (event.postback.paylaod === "MODERATE_EXERCISE")
-                  exercise = "Moderately_Active"
               }
-              if (event.postback.paylaod === "LIGHTLY_EXERCISE") {
+              else if (event.postback.payload === "MODERATE_EXERCISE"){
+                  exercise = "Moderately_Active";
+              }
+              else if (event.postback.payload === "LIGHTLY_EXERCISE") {
                 exercise = "Lightly_Active";
               }
-              if (event.postback.payload === "SEDENTRY_EXERCISE") {
+              else if (event.postback.payload === "SEDENTRY_EXERCISE") {
                 exercise = "Sedentary";
               }
               User.findOne({
@@ -124,8 +128,9 @@ module.exports = function(app) {
                     if (!err) {
                       console.log("data:", data);
                       console.log("user data:", result.gender);
+                      console.log("exercise type:",exercise);
                       request({
-                        url: "http://54.236.50.54/1.2/Calculatebmr?gender=" + result.gender + "&height=" + data.height + "&age=" + data.age + "&userId=" + event.sender.id + "&weight=" + data.weight + "&exerciseLevel=" + exercise,
+                        url: "http://54.236.50.54/1.2/Calculatebmr?gender="+result.gender+"&height="+data.height+"&age="+data.age+"&userId="+event.sender.id+"&weight="+data.weight+"&exerciseLevel="+exercise,
                         method: "GET"
                       }, function(error, response, body) {
                         if (!error) {
@@ -178,6 +183,59 @@ module.exports = function(app) {
               });
               //functionController.replyWithAttachments(event.sender.id, image_url, title, payload, button_title);
             }
+            if(event.postback.payload==="SHOWED_CALORIE")
+            {
+                    //console.log("show calorie ");
+                    PlainText.findOne({payload_for:"SHOWED_CALORIE"}).exec(function(err,data){
+                      if(!err)
+                      {
+                        functionController.replyWithPlainText(event,data.text);
+                      }
+                      else {
+                        console.log("error in plain text retrieval");
+                      }
+                    });
+                    ReplyWithAttachments.find({payload_for:"SHOWED_CALORIE"}).exec(function(err,result){
+                      if(!err)
+                      {
+                        console.log("result:",result);
+                        functionController.callReplyWithAttachments(result,err,event);
+                      }
+                      else {
+                        console.log("error in reply with attachements ");
+                      }
+                    })
+            }
+            if(event.postback.payload==="MAKE_DIET_PLAN")
+            {
+              console.log("diet plan");
+
+              QuickReply.find({
+                payload_for: "MAKE_DIET_PLAN"
+              }).exec(function(err, result) {
+                if (!err) {
+                  //  console.log("quick reply result:",result);
+                  for (var i = 0; i < _.size(result); i++) {
+                    title[i] = result[i].title;
+                    payload[i] = result[i].payload;
+                  }
+                  QuickReplyText.find({
+                    payload_for: "MAKE_DIET_PLAN"
+                  }).exec(function(err, result) {
+                    if (!err) {
+                      //console.log("quick reply with text:",result[0]);
+                      functionController.quickReply(event.sender.id, title, payload, result[0].text);
+                    } else {
+                      console.log("error in quick reply with text");
+                    }
+                  });
+                } else {
+                  console.log("error in quick reply data fetching.");
+                }
+              })
+
+            // functionController.callQuickReply(event.postback.payload,event);
+                        }
             if (event.postback.payload === "GET_STARTED") {
               //quickReply(event.sender.id);TEXT,TITLE,PAYLOAD
               //functionController.quickReply(event.sender.id);
@@ -227,7 +285,7 @@ module.exports = function(app) {
             // message is quick reply type
             if (event.message.quick_reply) {
 
-              if (event.message.quick_reply.payload === "NOT_DECIDED" || "BEGINNER" || "HALF_MARATHON" || "FULL_MARATHON") {
+              if (event.message.quick_reply.payload === "NOT_DECIDED" ||event.message.quick_reply.payload ===  "BEGINNER" ||event.message.quick_reply.payload ===  "HALF_MARATHON" ||event.message.quick_reply.payload ===  "FULL_MARATHON") {
                 //quickReply(event.sender.id);
                 //functionController.quickReply(event.sender.id);
                 ReplyWithText.find({
@@ -256,6 +314,80 @@ module.exports = function(app) {
                   }
                 });
               }
+              if(event.message.quick_reply.payload === "VEGAN_DIET" || event.message.quick_reply.payload ==="VEG_DIET" ||event.message.quick_reply.payload === "EGG_DIET" ||event.message.quick_reply.payload === "NON_VEG_DIET")
+              {
+                //console.log("diet call");
+                User.findOne({user_id:event.sender.id}).exec(function(err,data){
+                  if(!err)
+                  {
+                    console.log("user:",data);
+                    var text="Hey "+data.name+", here'\s your weekly diet plan. Also check your race day and recovery diet.";
+                    functionController.replyWithPlainText(event, text);
+                  }
+                  else {
+                    console.log("error in finding user");
+                  }
+                });
+              ReplyWithUrl.find({
+                $or: [{
+                    payload_for: "VEGAN_DIET"
+                  },
+                  {
+                    payload_for: "VEG_DIET"
+                  },
+                  {
+                    payload_for: "EGG_DIET"
+                  },
+                  {
+                    payload_for: "NON_VEG_DIET"
+                  }
+                ]
+              }).exec(function(err,result){
+                if(!err)
+                {
+                  //console.log("result:",result);
+                  for(var i=0;i<_.size(result);i++)
+                  {
+                    title[i]=result[i].title;
+                    image_url[i]=result[i].image_url;
+                    button_title[i]=result[i].b_t_p_title;
+                    payload[i]=result[i].b_t_p_payload;
+                    button_web_title[i]=result[i].b_t_w_title;
+                    var str=result[i].b_t_w_url;
+                     var btw_url=str.split(",");
+
+                     if(event.message.quick_reply.payload=="VEG_DIET")
+                     {
+                      button_web_url[i]=btw_url[0];
+                     console.log("button web url:",button_web_url[i]);
+                     }
+                    if(event.message.quick_reply.payload=="VEGAN_DIET")
+                    {
+                      button_web_url[i]=btw_url[1];
+                     console.log("button web url:",button_web_url[i]);
+                    }
+
+                    if(event.message.quick_reply.payload=="EGG_DIET")
+                    {
+                      button_web_url[i]=btw_url[2];
+                     console.log("button web url:",button_web_url[i]);
+                    }
+                    if(event.message.quick_reply.payload=="NON_VEG_DIET")
+                    {
+                      button_web_url[i]=btw_url[3];
+                     console.log("button web url:",button_web_url[i]);
+                    }
+
+                  //  console.log("result[i].btwurl",result[i].b_t_w_url);
+                }
+                  //functionController.replyWithUrl(event.sender.id, image_url, title, payload, button_title,button_web_title,button_web_url);
+                }
+                else {
+
+                }
+              })
+
+               }
             } else {
               //message is text type
               request({
@@ -315,17 +447,45 @@ module.exports = function(app) {
                           var num = textmsg.match(/\d/g);
                           numb = num.join("");
                           //  console.log(numb);
-                          UserPersonal({
-                            user_id: event.sender.id,
-                            age: numb
-                          }).save(function(err, data) {
-                            if (!err) {
-                              //console.log("age is saved in database.");
-                              functionController.replyWithPlainText(event, process.env.ASK_FOR_HEIGHT);
-                            } else {
-                              console.log("age is not saved.");
+                          UserPersonal.find({user_id:event.sender.id}).exec(function(err,result){
+                            if(!err)
+                            {
+                              if(_.size(result)==0)
+                              {
+                                UserPersonal({
+                                  user_id: event.sender.id,
+                                  age: numb
+                                }).save(function(err, data) {
+                                  if (!err) {
+                                    //console.log("age is saved in database.");
+                                    functionController.replyWithPlainText(event, process.env.ASK_FOR_HEIGHT);
+                                  } else {
+                                    console.log("age is not saved.");
+                                  }
+                                });
+                              }
+                              else {
+                                UserPersonal.update({
+                                  user_id: event.sender.id
+                                }, {
+                                  $set: {
+                                    age: numb
+                                  }
+                                }).exec(function(err, data) {
+                                  if (!err) {
+                                    //console.log("height is saved in database.");
+                                    functionController.replyWithPlainText(event, process.env.ASK_FOR_HEIGHT);
+                                  } else {
+                                    console.log("height is not saved.");
+                                  }
+                                });
+                              }
                             }
-                          });
+                            else {
+                             console.log("error in userpersonal");
+                            }
+                          })
+
 
                         } else if (/[1-9][0-9]?feet,?[1-9]?[0-9]?i?n?c?h?e?s?/i.test(event.message.text)) {
                           var textmsg = event.message.text;
@@ -380,7 +540,7 @@ module.exports = function(app) {
                             }
                           });
                         } else {
-                        
+
                           textMsg = event.message.text + " " + userName+", get fit with Nestle, your companion to good health.";
                           //receivedMessage(event, textMsg);title,payload
                           functionController.replyWithPlainText(event,textMsg);

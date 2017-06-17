@@ -1,5 +1,12 @@
 var request = require('request');
 var _ = require('underscore');
+var QuickReply = require('../models/quick_reply.js');
+var QuickReplyText = require('../models/quick_reply_text.js');
+var image_url=[];
+var title=[];
+var payload=[];
+var button_title=[];
+var button_web_url=[];
 exports.replyWithTwoPayload=function(event, title, payload, textMsg)
 {
   var messageData = {
@@ -99,6 +106,7 @@ exports.replyWithAttachments = function(recipient, image_url, title, payload, bu
     };
     element.push(object);
   }
+  console.log("element value",element);
   var messageData = {
     recipient: {
       id: recipient
@@ -186,11 +194,8 @@ exports.callReplyWithAttachments=function(result,err,event){
   if(!err)
   {
     console.log("length of payload:",_.size(result));
-    console.log("length of payload 1:",result[1]);
-    var image_url=[];
-    var title=[];
-    var payload=[];
-    var button_title=[];
+    console.log("length of payload 1:",result);
+
     for(var i=0;i<_.size(result);i++)
     {
 
@@ -208,4 +213,65 @@ exports.callReplyWithAttachments=function(result,err,event){
     console.log("error in reply with attachemnts");
   }
 
+}
+exports.callQuickReply=function(postback_payload,event){
+  QuickReply.find({
+    payload_for:postback_payload
+  }).exec(function(err, result) {
+    if (!err) {
+      //  console.log("quick reply result:",result);
+      for (var i = 0; i < _.size(result); i++) {
+        title[i] = result[i].title;
+        payload[i] = result[i].payload;
+      }
+      QuickReplyText.find({
+        payload_for: postback_payload
+      }).exec(function(err, result) {
+        if (!err) {
+          console.log("quick reply with text:",result[0]);
+        this.quickReply(event.sender.id, title, payload, result[0].text);
+        } else {
+          console.log("error in quick reply with text");
+        }
+      });
+    } else {
+      console.log("error in quick reply data fetching.");
+    }
+  })
+}
+exports.replyWithUrl=function(recipient, image_url, title, payload, button_title,button_web_title,button_web_url)
+{
+  var messageData = {
+    recipient: {
+      id: recipient
+    },
+    message: {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "generic",
+          elements: [{
+              title: title[0],
+              image_url: image_url[0],
+              buttons: [{
+                type: "postback",
+                title: button_title[0],
+                payload: payload[0],
+              }],
+            }, {
+              title: title[1],
+              image_url: image_url[1],
+              buttons: [{
+                type: "postback",
+                title: button_title[1],
+                payload: payload[1],
+              }]
+            }]
+        }
+      }
+
+    }
+
+  };
+  this.callSendAPI(messageData);
 }
