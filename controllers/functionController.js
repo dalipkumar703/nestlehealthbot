@@ -2,11 +2,7 @@ var request = require('request');
 var _ = require('underscore');
 var QuickReply = require('../models/quick_reply.js');
 var QuickReplyText = require('../models/quick_reply_text.js');
-var image_url=[];
-var title=[];
-var payload=[];
-var button_title=[];
-var button_web_url=[];
+
 exports.replyWithTwoPayload=function(event, title, payload, textMsg)
 {
   var messageData = {
@@ -90,6 +86,7 @@ exports.replyWithAttachments = function(recipient, image_url, title, payload, bu
     }]
   }];
   */
+
   var element=[];
   for(var i=0;i<payload.length;i++)
   {
@@ -104,6 +101,7 @@ exports.replyWithAttachments = function(recipient, image_url, title, payload, bu
         }
       ]
     };
+    console.log("payload :",payload[i]);
     element.push(object);
   }
   console.log("element value",element);
@@ -181,8 +179,8 @@ exports.callSendAPI = function(messageData) {
         messageId, recipientId);
     } else {
       console.error("Unable to send message.");
-      //console.error(response);
-      //console.error(error);
+    //  console.error(response);
+    console.error(error);
     }
     console.log("hello");
 
@@ -191,6 +189,11 @@ exports.callSendAPI = function(messageData) {
 
 }
 exports.callReplyWithAttachments=function(result,err,event){
+  var image_url=[];
+  var title=[];
+  var payload=[];
+  var button_title=[];
+  var button_web_url=[];
   if(!err)
   {
     console.log("length of payload:",_.size(result));
@@ -214,7 +217,35 @@ exports.callReplyWithAttachments=function(result,err,event){
   }
 
 }
+exports.QuickReplyForTwo=function(recipient, title, postback, text){
+console.log("paylaod in quickreply:",postback);
+  var messageData = {
+    recipient: {
+      id: recipient
+    },
+    message: {
+      "text": text,
+      "quick_replies": [{
+          "content_type": "text",
+          "title": title[0],
+          "payload": postback[0]
+        },
+        {
+          "content_type": "text",
+          "title": title[1],
+          "payload": postback[1]
+        }
+      ]
+    }
+  };
+  this.callSendAPI(messageData);
+}
 exports.callQuickReply=function(postback_payload,event){
+  var image_url=[];
+  var title=[];
+  var payload=[];
+  var button_title=[];
+  var button_web_url=[];
   QuickReply.find({
     payload_for:postback_payload
   }).exec(function(err, result) {
@@ -257,16 +288,44 @@ exports.replyWithUrl=function(recipient, image_url, title, payload, button_title
                 type: "postback",
                 title: button_title[0],
                 payload: payload[0],
+              },
+              {
+                type: "web_url",
+                url:button_web_url[0] ,
+                title: button_web_title[0]
+
               }],
-            }, {
-              title: title[1],
-              image_url: image_url[1],
-              buttons: [{
-                type: "postback",
-                title: button_title[1],
-                payload: payload[1],
-              }]
-            }]
+            },{
+                title: title[1],
+                image_url: image_url[1],
+                buttons: [{
+                  type: "postback",
+                  title: button_title[1],
+                  payload: payload[1],
+                },
+                {
+                  type: "web_url",
+                  url:button_web_url[1] ,
+                  title: button_web_title[1]
+
+                }],
+              },
+              {
+                  title: title[2],
+                  image_url: image_url[2],
+                  buttons: [{
+                    type: "postback",
+                    title: button_title[2],
+                    payload: payload[2],
+                  },
+                  {
+                    type: "web_url",
+                    url:button_web_url[2] ,
+                    title: button_web_title[2]
+
+                  }],
+                }
+               ]
         }
       }
 
@@ -274,4 +333,138 @@ exports.replyWithUrl=function(recipient, image_url, title, payload, button_title
 
   };
   this.callSendAPI(messageData);
+}
+exports.callReplyWithUrl=function(result,err,event)
+{
+
+  if(!err)
+  {
+    var element=[];
+    for(var i=0;i<payload.length;i++)
+    {
+      var object ={
+        title:title[i],
+        image_url:image_url[i],
+        buttons:[
+          {
+            type: "postback",
+            title: button_title[i],
+            payload: payload[i],
+          },
+          {
+            type: "web_url",
+            url:button_web_url[i] ,
+            title: button_web_title[i]
+
+          }
+        ]
+      };
+      element.push(object);
+    }
+    this.ReplyWithUrl(recipient, image_url, title, payload, button_title,button_web_title,button_web_url);
+
+  }
+  else {
+    console.log("error in callreplywithurl function");
+  }
+}
+exports.replyWithUrlOnly=function(recipient,title,subtitle,image_url,button_web_title,button_web_url){
+  var messageData = {
+    recipient: {
+      id: recipient
+    },
+    message: {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "generic",
+          elements: [{
+              title: title[0],
+              image_url: image_url[0],
+              buttons: [{
+                type: "web_url",
+                url: button_web_url[0],
+                title: button_web_title[0]
+
+              }],
+            },{
+                title: title[1],
+                image_url: image_url[1],
+                buttons: [{
+                  type: "web_url",
+                  url: button_web_url[1],
+                  title: button_web_title[1]
+
+                }],
+              },
+              {
+                  title: title[2],
+                  image_url: image_url[2],
+                  buttons: [{
+                    type: "web_url",
+                      url: button_web_url[2],
+                    title: button_web_title[2]
+
+                  }],
+                },
+                {
+                    title: title[3],
+                    image_url: image_url[3],
+                    buttons: [{
+                      type: "web_url",
+                      url: button_web_url[3],
+                      title: button_web_title[3]
+
+                    }],
+                  },
+                  {
+                      title: title[4],
+                      image_url: image_url[4],
+                      buttons: [{
+                        type: "web_url",
+                        url: button_web_url[4],
+                        title: button_web_title[4]
+
+                      }],
+                    },
+                    {
+                        title: title[5],
+                        image_url: image_url[5],
+                        buttons: [{
+                          type: "web_url",
+                          url: button_web_url[5],
+                          title: button_web_title[5]
+
+                        }],
+                      },
+                      {
+                          title: title[6],
+                          image_url: image_url[6],
+                          buttons: [{
+                            type: "web_url",
+                            url: button_web_url[6],
+                            title: button_web_title[6]
+
+                          }],
+                        }
+               ]
+        }
+      }
+
+    }
+
+  };
+  console.log("messageData ",messageData);
+  this.callSendAPI(messageData);
+}
+exports.callCalorieCalculator=function(event){
+ var textMsg="You can also check calories of every meal. Enter your entire meal. Separate each item with a comma e.g 2 naan, 1 butter chicken, 1 plate rice. Go ahead, try!";
+  this.replyWithPlainText(event,textMsg);
+}
+exports.bmrShow=function(bmr,event)
+{
+  msg = "Great! You need " + bmr + " calories per day to maintain your weight.";
+  title[0] = "Next";
+  payload[0] = "SHOWED_CALORIE";
+  this.receivedMessage(event, title, payload, msg);
 }
