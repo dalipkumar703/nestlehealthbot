@@ -105,11 +105,39 @@ module.exports = function(app) {
               });
 
             }
-            if (event.postback.payload === "GOT_IT_RUNNING_STATUS" || event.postback.payload === "EDIT_USER_DETAIL") {
+            if (event.postback.payload === "GOT_IT_RUNNING_STATUS") {
               console.log("got it running status");
-          
-             functionController.replyWithPlainText(event, process.env.ASK_FOR_AGE);
+              User.findOne({user_id:event.sender.id}).exec(function(err,data){
+                if(!err)
+                {
+                  console.log("is brm",data.is_bmr);
+                  if(data.is_bmr)
+                  {
+                   UserPersonal.find({user_id:event.sender.id}).exec(function(err,data){
+                     if(!err)
+                     {
+                       msg = "Your body mass ratio is " + data[0].bmr + ".You can calculate again.";
+                       title[0] = "Next";
+                       payload[0] = "SHOWED_CALORIE";
+                       title[1]="Edit";
+                       payload[1]="EDIT_USER_DETAIL";
+                       functionController.replyWithTwoPayload(event, title, payload, msg);
+                     }
+                   })
 
+                  }
+                  else {
+                    functionController.replyWithPlainText(event, process.env.ASK_FOR_AGE);
+                  }
+                }
+
+              });
+
+
+            }
+            if( event.postback.payload === "EDIT_USER_DETAIL")
+            {
+              functionController.replyWithPlainText(event, process.env.ASK_FOR_AGE);
             }
             if (event.postback.payload === "VERY_ACTIVE_EXERCISE" ||event.postback.payload === "MODERATE_EXERCISE" || event.postback.payload ==="LIGHTLY_EXERCISE" || event.postback.payload ==="SEDENTRY_EXERCISE") {
               console.log("exercise type");
