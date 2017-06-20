@@ -10,5 +10,5 @@ app.use(express.static('./public'));
 mainController(app);
 //test(app);
 
-app.listen(process.env.HOST||5000);
+app.listen(process.env.PORT||5000);
 console.log("hello app");
