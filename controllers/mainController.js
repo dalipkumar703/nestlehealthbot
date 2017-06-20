@@ -49,6 +49,7 @@ module.exports = function(app) {
   //app.get('/user', api.post);
  app.get("/", function (req, res) {
   res.send("Deployed!");
+ });
   app.get('/webhook', function(req, res) {
     if (req.query['hub.mode'] === 'subscribe' &&
       req.query['hub.verify_token'] === process.env.HUB_VERIFY) {
