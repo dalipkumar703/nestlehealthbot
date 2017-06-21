@@ -53,7 +53,7 @@ module.exports = function(app) {
  });
   app.get('/webhook', function(req, res) {
     if (req.query['hub.mode'] === 'subscribe' &&
-      req.query['hub.verify_token'] == "123456") {
+      req.query['hub.verify_token'] == process.env.HUB_VERIFY) {
       console.log("Validating webhook");
       res.status(200).send(req.query['hub.challenge']);
     } else {
