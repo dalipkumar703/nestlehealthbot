@@ -44,15 +44,16 @@ module.exports = function(app) {
   }))
 
   // parse application/json
-  app.use(bodyParser.json())
+  app.use(bodyParser.json());
   //api calls
   //app.get('/user', api.post);
  app.get("/", function (req, res) {
   res.send("Deployed!");
+  console.log("deployed");
  });
   app.get('/webhook', function(req, res) {
     if (req.query['hub.mode'] === 'subscribe' &&
-      req.query['hub.verify_token'] === process.env.HUB_VERIFY) {
+      req.query['hub.verify_token'] == "123456") {
       console.log("Validating webhook");
       res.status(200).send(req.query['hub.challenge']);
     } else {
@@ -119,7 +120,7 @@ module.exports = function(app) {
                    UserPersonal.find({user_id:event.sender.id}).exec(function(err,data){
                      if(!err)
                      {
-                       msg = "Your body mass ratio is " + data[0].bmr + ".You can calculate again.";
+                       msg ="Great! You need " + data[0].bmr +" calories per day to maintain your weight.";
                        title[0] = "Next";
                        payload[0] = "SHOWED_CALORIE";
                        title[1]="Edit";
@@ -737,7 +738,7 @@ module.exports = function(app) {
                           if (err) throw err;
                           console.log("user store:", data);
                         });
-                        if (/[1-9][0-9]?age/i.test(event.message.text)) {
+                        if (/[1-9][0-9]?\sage/i.test(event.message.text)) {
                           //console.log("age is correct");
                           var textmsg = event.message.text;
                           var num = textmsg.match(/\d/g);
@@ -753,7 +754,7 @@ module.exports = function(app) {
 
                       } else {
                         console.log("string length",_.size(event.message.text));
-                        if(_.size(event.message.text)>7)
+                        if(_.size(event.message.text)>20)
                         {
                           console.log(_.size(event.message.text));
                           let apiai = apiapp.textRequest(event.message.text, {
@@ -771,7 +772,7 @@ module.exports = function(app) {
                           });
                           apiai.end();
                         }
-                        else if (/[1-9][0-9]?age/i.test(event.message.text)) {
+                        else if (/[1-9][0-9]?\sage/i.test(event.message.text)) {
                           //save age of user
                           var textmsg = event.message.text;
                           var num = textmsg.match(/\d/g);
@@ -817,7 +818,7 @@ module.exports = function(app) {
                           })
 
 
-                        } else if (/[1-9][0-9]?feet,?[1-9]?[0-9]?i?n?c?h?e?s?/i.test(event.message.text)) {
+                        } else if (/[1-9][0-9]?\sfeet,?[1-9]?[0-9]?\s?i?n?c?h?e?s?/i.test(event.message.text)) {
                           var textmsg = event.message.text;
                           var num = textmsg.match(/\d/g);
                           numb = num.join("");
@@ -835,7 +836,7 @@ module.exports = function(app) {
                               console.log("height is not saved.");
                             }
                           });
-                        } else if (/[1-9][0-9]?[0-9]?Kg/i.test(event.message.text)) {
+                        } else if (/[1-9][0-9]?[0-9]?\sKg/i.test(event.message.text)) {
                           //console.log("weight is received");
                           var textmsg = event.message.text;
                           var num = textmsg.match(/\d/g);
@@ -879,12 +880,19 @@ module.exports = function(app) {
                             if (!error) {
                               var result = JSON.parse(response.body);
                               console.log("result:",result);
-                              var textMsg="Hey Genit, Here'\s your answer\n"+result.set_variables.totalcalories+",\n Make sure you read the label and control the portion you take.";
-                              title[0]=process.env.PORTION_GUIDANCE;
-                              title[1]=process.env.READING_MANUAL;
-                              payload[0]=process.env.PAYLOAD_PORTION;
-                              payload[1]=process.env.PAYLOAD_MANUAL;
-                              functionController.replyWithTwoPayload(event, title, payload, textMsg);
+                              User.find({user_id:event.sender.id}).exec(function(err,data){
+                                if(!err)
+                                {
+                                  console.log("name",data);
+                                  var textMsg="Hey "+data[0].name+", Here'\s your answer\n"+result.set_variables.totalcalories+"\n Make sure you read the label and control the portion you take.";
+                                  title[0]=process.env.PORTION_GUIDANCE;
+                                  title[1]=process.env.READING_MANUAL;
+                                  payload[0]=process.env.PAYLOAD_PORTION;
+                                  payload[1]=process.env.PAYLOAD_MANUAL;
+                                  functionController.replyWithTwoPayload(event, title, payload, textMsg);
+                                }
+                              })
+
                             } else {
                               console.error("Unable to send message.");
                               //console.error(response);
