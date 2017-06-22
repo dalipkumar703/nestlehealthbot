@@ -124,12 +124,12 @@ exports.replyWithAttachments = function(recipient, image_url, title, payload, bu
   this.callSendAPI(messageData);
 }
 
-exports.receivedMessage = function(event, title, payload, textMsg) {
+exports.receivedMessage = function(recipient, title, payload, textMsg) {
   // Putting a stub for now, we'll expand it in the following steps
   console.log("payload", payload[0]);
   var messageData = {
     recipient: {
-      id: event.sender.id
+      id: recipient
     },
     message: {
       "attachment": {
@@ -179,8 +179,8 @@ exports.callSendAPI = function(messageData) {
         messageId, recipientId);
     } else {
       console.error("Unable to send message.");
-    //  console.error(response);
-    console.error(error);
+  // console.error(response);
+    //console.error(error);
     }
     console.log("hello");
 
@@ -461,10 +461,74 @@ exports.callCalorieCalculator=function(event){
  var textMsg="You can also check calories of every meal. Enter your entire meal. Separate each item with a comma e.g 2 naan, 1 butter chicken, 1 plate rice. Go ahead, try!";
   this.replyWithPlainText(event,textMsg);
 }
-exports.bmrShow=function(bmr,event)
+exports.bmrShow=function(bmr,recipient)
 {
   msg = "Great! You need " + bmr + " calories per day to maintain your weight.";
   title[0] = "Next";
   payload[0] = "SHOWED_CALORIE";
-  this.receivedMessage(event, title, payload, msg);
+  this.receivedMessage(recipient, title, payload, msg);
+}
+exports.callSendImageOnly=function(recipient,url)
+{
+  var messageData={
+    "recipient":{
+   "id":recipient
+ },
+ "message":{
+   "attachment":{
+     "type":"image",
+     "payload":{
+       "url":url
+     }
+   }
+ }
+  };
+  this.callSendAPI(messageData);
+}
+exports.callSendWithXPayload=function(recipient,payload,title,text,url,url_title)
+{
+  var element=[];
+  for(var i=0;i<payload.length;i++)
+  {
+    var obj_postback={
+      "type": "postback",
+      "title": title[i],
+      "payload": payload[i]
+    };
+
+    element.push(obj_postback);
+  }
+  for(i=0;i<url.length;i++)
+  {
+    var obj_url={
+      "type": "web_url",
+      "url":url[i] ,
+      "title": url_title[i]
+
+    };
+   element.push(obj_url);
+  }
+  var messageData = {
+    recipient: {
+      id: recipient
+    },
+    message: {
+      "attachment": {
+        "type": "template",
+        "payload": {
+          "template_type": "button",
+          "text": text,
+          "buttons": element
+        }
+      }
+    }
+  };
+  this.callSendAPI(messageData);
+
+}
+exports.callAskQuestion=function(recipient,title, payload, text,url)
+{
+
+  this.receivedMessage(recipient, title, payload, text);
+  this.callSendImageOnly(recipient,url);
 }

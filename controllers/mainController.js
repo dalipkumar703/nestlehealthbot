@@ -16,6 +16,7 @@ var QuickReplyText = require('../models/quick_reply_text.js');
 var ReplyWithUrl = require('../models/reply_with_url.js');
 var PlainText = require('../models/reply_with_plain_text.js');
 var ReplyWithUrlOnly = require('../models/reply_with_url_only.js');
+var ReplyWithImageOnly=require('../models/reply_with_image_only.js');
 var functionController = require('./functionController.js');
 var _ = require('underscore');
 var textMsg;
@@ -78,6 +79,118 @@ module.exports = function(app) {
         entry.messaging.forEach(function(event) {
 
           if (event.postback) {
+            if(event.postback.payload==="PALM")
+            {
+              console.log("PALM");
+              PlainText.find({payload_for:"PALM"}).exec(function(err,data){
+                if(!err)
+                {
+                  console.log("data:",data);
+                  functionController.replyWithPlainText(event, data[0].text);
+                }
+              })
+            }
+            if(event.postback.payload==="DAL")
+            {
+              console.log("DAL");
+              PlainText.find({payload_for:"DAL"}).exec(function(err,data){
+                if(!err)
+                {
+                  console.log("data:",data);
+                  functionController.replyWithPlainText(event, data[0].text);
+                }
+              })
+            }
+            if(event.postback.payload==="CREDIT_CARD")
+            {
+              console.log("CREDIT_CARD");
+              PlainText.find({payload_for:"CREDIT_CARD"}).exec(function(err,data){
+                if(!err)
+                {
+                  console.log("data:",data);
+                  functionController.replyWithPlainText(event, data[0].text);
+                }
+              })
+            }
+            if(event.postback.payload==="CD")
+            {
+              console.log("CD");
+              PlainText.find({payload_for:"CD"}).exec(function(err,data){
+                if(!err)
+                {
+                  console.log("data:",data);
+                  functionController.replyWithPlainText(event, data[0].text);
+                }
+              })
+            }
+            if(event.postback.payload==="TENNIS_BALL")
+            {
+              console.log("tennis ball");
+              PlainText.find({payload_for:"TENNIS_BALL"}).exec(function(err,data){
+                if(!err)
+                {
+                  console.log("data:",data);
+                  functionController.replyWithPlainText(event, data[0].text);
+                }
+              })
+            }
+            if(event.postback.payload==="LET_GO_PORTION")
+            {
+              console.log("let go portion");
+              PlainText.find({payload_for:"LET_GO_PORTION"}).exec(function(err,data){
+                if(!err)
+                {
+                  console.log("data:",data);
+                  functionController.replyWithPlainText(event, data[0].text);
+                }
+              })
+            }
+            if(event.postback.payload==="START_GAME")
+            {
+              console.log("start game");
+
+                ReplyWithImageOnly.find({payload_for:"START_GAME"}).exec(function(err,data){
+                  if(!err)
+                  {
+                    console.log("data:",data);
+                      functionController.callSendImageOnly(event.sender.id,data[0].url);
+                  }
+                });
+                PlainText.find({payload_for:"START_GAME"}).exec(function(err,data){
+                  if(!err)
+                  {
+                    console.log("text from plain reply",data);
+                    functionController.replyWithPlainText(event, data[0].text);
+                  }
+                });
+
+
+            }
+            if(event.postback.payload==="PLAY_GAME")
+            {
+              console.log("play game");
+              User.findOne({user_id:event.sender.id}).exec(function(err,data){
+                if(!err)
+                {
+                  console.log("user name:",data);
+                  ReplyWithText.find({payload_for:"PLAY_GAME"}).exec(function(err,result){
+                    if(!err)
+                    {
+                    //  console.log("play game data",result);
+                    for(var i=0;i<_.size(result);i++)
+                    {
+                      payload[i]=result[i].payload;
+                      title[i]=result[i].title;
+                    }
+                    var msg;
+                    msg="Hey "+data.name+", time for a little game🎮";
+                  functionController.replyWithTwoPayload(event, title, payload,msg);
+                    }
+                  })
+                }
+
+              })
+            }
             if(event.postback.payload==="CALORIE_CALCULATOR")
             {
               console.log("calorie calculator");
@@ -209,7 +322,7 @@ module.exports = function(app) {
                           msg = "Great! You need " + resultExercise.set_variables.bmr + " calories per day to maintain your weight.";
                           title[0] = "Next";
                           payload[0] = "SHOWED_CALORIE";
-                          functionController.receivedMessage(event, title, payload, msg);
+                          functionController.receivedMessage(event.sender.id, title, payload, msg);
                         } else {
                           console.error("Unable to send message.");
                           //console.error(response);
@@ -497,7 +610,7 @@ module.exports = function(app) {
                     console.log("reply with text result:", result[0].payload);
                     title[0] = "Got it";
                     payload[0] = result[0].payload;
-                    functionController.receivedMessage(event, title, payload, result[0].text);
+                    functionController.receivedMessage(event.sender.id, title, payload, result[0].text);
 
                   } else {
                     console.log("error in reply with text result");
@@ -748,7 +861,7 @@ module.exports = function(app) {
                           //receivedMessage(event, textMsg);title,payload
                           functionController.replyWithPlainText(event,textMsg);
                           textMsg1="You need a variety of nutrients to strengthen your performance and endurance. Let's guide you on daily nutrition. To start over type \"Hi\" any time.";
-                          functionController.receivedMessage(event, title, payload, textMsg1);
+                          functionController.receivedMessage(event.sender.id, title, payload, textMsg1);
 
                         }
 
@@ -771,6 +884,74 @@ module.exports = function(app) {
                             console.log("error in api ai:", error);
                           });
                           apiai.end();
+                        }
+                        else if(/[1-9]?[0-9]+\sgm/i.test(event.message.text))
+                        {
+                          var url="https://scontent.xx.fbcdn.net/v/t34.0-0/p280x280/17141321_958249330944340_510464946_n.jpg?_nc_ad=z-m&oh=f8cc22bdc955d5730a5ec2e765e38a96&oe=594E3589";
+                          title[0]="Ask More";
+                          payload[0]="DAL";
+                          text="30 gm or half a cup.";
+
+                          functionController.callAskQuestion(event.sender.id,title, payload, text,url);
+                        }
+                        else if(/[1-9]?[0-9]+\slitre/i.test(event.message.text))
+                        {
+                          var url="https://l.messenger.com/l.php?u=https%3A%2F%2Fscontent.fdel1-1.fna.fbcdn.net%2Fv%2Ft34.0-0%2Fp280x280%2F17141727_958249394277667_1219660866_n.jpg%3Foh%3D9d6eb6915c1ab9f0fd848d24a10c2759%26oe%3D594E0A29&h=ATPmM8c5gsY-qVksk4bw_RSVcsFv3eOrRB7P8MegH05HY1w_z4LC-bOp8tAQIJI9rHmLsTd8abh0Lbvpo2DUxLaw7hMdABSKYmXjh8tocmxfoPfCIdwI8jOaumb8Z51tE0grlg";
+                          title[0]="More on this";
+                          button_web_url[0]="https://s3.amazonaws.com/nestlehome/eatanddrink.html";
+                          text="1 cup milk = 250 mL";
+                          functionController.callSendImageOnly(event.sender.id,url);
+                          functionController.callSendWithXPayload(event.sender.id,0,0,text,button_web_url,title);
+                          //functionController.callAskQuestion(event.sender.id,title, payload, text,url);
+                        }
+
+                        else if(/[1-9]?[0-9]+\sr?i?c?e?p?a?s?t?a?n?o?o?d?l?e?s?/i.test(event.message.text))
+                        {
+                          var url="https://scontent.xx.fbcdn.net/v/t34.0-0/p280x280/17078108_955444074558199_1834766401_n.jpg?_nc_ad=z-m&oh=ecab7a427b6ef9969df277908e76314d&oe=594DF4EB";
+                          title[0]="Ask More";
+                          payload[0]="TENNIS_BALL";
+                          text="Size of a tennis ball!  That’s the quantity you should take .";
+
+                          functionController.callAskQuestion(event.sender.id,title, payload, text,url);
+                        }
+
+                        else if(/[a-z]+\smeat/i.test(event.message.text))
+                        {
+                          var url="https://scontent.fdel1-1.fna.fbcdn.net/v/t34.0-0/p280x280/17101742_956141274488479_1490264435_n.jpg?oh=4dbe83d67396cec433868dc03f0098e8&oe=594DCF23";
+                          title[0]="Ask More";
+                          payload[0]="PALM";
+                          text="90-100 gm. About the size of your palm !!";
+
+                          functionController.callAskQuestion(event.sender.id,title, payload, text,url);
+                        }
+                        else if(/[a-z]+\ssize/i.test(event.message.text))
+                        {
+                          var url="https://scontent.fdel1-1.fna.fbcdn.net/v/t34.0-12/17078518_955444347891505_1540860361_n.jpg?oh=87798be7472e0650b7e01987046c862a&oe=594DD2C1";
+                          title[0]="Ask More";
+                          payload[0]="CD";
+                          text="Remember the CD! That’s how big your Chapatti sould be";
+
+                          functionController.callAskQuestion(event.sender.id,title, payload, text,url);
+                        }
+                        else if(/[a-z]+\scmp/i.test(event.message.text))
+                        {
+                          var url="https://scontent.fdel1-1.fna.fbcdn.net/v/t34.0-0/p280x280/17077947_955444624558144_1832317505_n.jpg?oh=964bc2e900e1fb2d19f2ab5b0fc2d7a9&oe=594DEC2A";
+                          title[0]="Ask More";
+                          payload[0]="CREDIT_CARD";
+                          text="The size of your credit card. No more than this in a portion.";
+                        functionController.callAskQuestion(event.sender.id,title, payload, text,url);
+                        }
+                        else if(/[1-9][0-9]+\scalorie/i.test(event.message.text))
+                        {
+                      console.log("pizza calorie");
+                      var msg="2000! An adult's whole day allowance. You can check calories of every meal. Enter your entire meal & separate each item with a comma e.g 2 naan, 1 butter chicken, 1 plate rice. Or click the links for more information";
+                         payload[0]=process.env.PAYLOAD_PORTION;
+                         payload[1]=process.env.PAYLOAD_MANUAL;
+                         title[0]=process.env.PORTION_GUIDANCE;
+                         title[1]=process.env.READING_MANUAL;
+                          button_web_title[0]=process.env.URL_TITLE;
+                          button_web_url[0]=process.env.URL_LINK;
+                         functionController.callSendWithXPayload(event.sender.id,payload,title,msg,button_web_url,button_web_title);
                         }
                         else if (/[1-9][0-9]?\sage/i.test(event.message.text)) {
                           //save age of user
@@ -909,7 +1090,7 @@ module.exports = function(app) {
                           //receivedMessage(event, textMsg);title,payload
                           functionController.replyWithPlainText(event,textMsg);
                           textMsg1="You need a variety of nutrients to strengthen your performance and endurance. Let's guide you on daily nutrition. To start over type \"Hi\" any time.";
-                          functionController.receivedMessage(event, title, payload, textMsg1);
+                          functionController.receivedMessage(event.sender.id, title, payload, textMsg1);
                         }
 
                       }
