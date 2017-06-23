@@ -2,6 +2,19 @@ var request = require('request');
 var _ = require('underscore');
 var QuickReply = require('../models/quick_reply.js');
 var QuickReplyText = require('../models/quick_reply_text.js');
+exports.sayHi=function(recipient,textMsg)
+{
+  var messageData = {
+    "recipient": {
+      "id": recipient
+    },
+    "message": {
+      "text": textMsg
+    }
+
+  };
+  this.callSendAPI(messageData);
+}
 
 exports.replyWithTwoPayload=function(event, title, payload, textMsg)
 {

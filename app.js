@@ -1,5 +1,6 @@
 var express = require('express');
 var mainController = require('./controllers/mainController');
+var CronJobs=require('./controllers/cronjobsController');
 //var test=require('./controllers/test.js');
 var app = express();
 var dotenv = require('dotenv');
@@ -14,3 +15,4 @@ app.listen(app.get('port'), function() {
   console.log("Node app is running at localhost: " + app.get('port'))
 })
 console.log("hello app");
+CronJobs.callReminder();

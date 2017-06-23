@@ -905,7 +905,7 @@ module.exports = function(app) {
                           //functionController.callAskQuestion(event.sender.id,title, payload, text,url);
                         }
 
-                        else if(/[1-9]?[0-9]+\sr?i?c?e?p?a?s?t?a?n?o?o?d?l?e?s?/i.test(event.message.text))
+                        else if(/[1-9]?[0-9]+\srice/i.test(event.message.text))
                         {
                           var url="https://scontent.xx.fbcdn.net/v/t34.0-0/p280x280/17078108_955444074558199_1834766401_n.jpg?_nc_ad=z-m&oh=ecab7a427b6ef9969df277908e76314d&oe=594DF4EB";
                           title[0]="Ask More";
