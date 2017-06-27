@@ -338,10 +338,10 @@ module.exports = function(app) {
                           PortionGuidanceModule.portionGuidanceModuleTextMessage(event.sender.id, event.message.text);
                         } else if (/[1-9][0-9]+\scalorie/i.test(event.message.text)) {//text message is end with calorie
                           GameModule.gameModuleTextMessage(event.sender.id, event.message.text);
-                        } else if (/[1-9][0-9]?\sage/i.test(event.message.text)) {//text message is end with age
+                        } else if (/[1-9][0-9]?\syears/i.test(event.message.text)||/[1-9][0-9]?\syrs/i.test(event.message.text)||/[a-z]+\syears/i.test(event.message.text)) {//text message is end with age
                           //save age of user
                           BmrCalculateModule.TextMessage(event.sender.id, event.message.text);
-                        } else if (/[1-9][0-9]?\sfeet,?[1-9]?[0-9]?\s?i?n?c?h?e?s?/i.test(event.message.text)) {//text message is end with feet,inches
+                        } else if (/[1-9][0-9]?\sfe?e?t,?[1-9]?[0-9]?\s?i?n?c?h?e?s?/i.test(event.message.text)) {//text message is end with feet,inches
                           BmrCalculateModule.TextMessage(event.sender.id, event.message.text);
                         } else if (/[1-9][0-9]?[0-9]?\sKg/i.test(event.message.text)) { //text message is end with kg
                           //console.log("weight is received");
@@ -350,7 +350,7 @@ module.exports = function(app) {
                           //text message is end with naan, butter chicken ...
                            //call calorie calculate api for naan, butter chicken ...
                           request({
-                            url: "http://54.236.50.54/1.2/Getcalorific?data=" + event.message.text,
+                            url: process.env.GET_CALORIE_URL + event.message.text,
                             method: "GET"
                           }, function(error, response, body) {
                             if (!error) {

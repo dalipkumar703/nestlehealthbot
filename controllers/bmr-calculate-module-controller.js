@@ -182,49 +182,61 @@ exports.quickReplyPostback = function(recipient, postback) {
 exports.TextMessage = function(recipient, text) {
   var title = [];
   var payload = [];
-  if (/[1-9][0-9]?\sage/i.test(text)) {
+  if (/[1-9][0-9]?\syears/i.test(text)||/[1-9][0-9]?\syrs/i.test(text)||/[a-z]+\syears/i.test(text)) {
     var textmsg = text;
-    var num = textmsg.match(/\d/g);
-    numb = num.join("");
-    //  console.log(numb);
-    UserPersonal.find({
-      user_id: recipient
-    }).exec(function(err, result) {
-      if (!err) {
-        if (_.size(result) == 0) {
-          UserPersonal({
-            user_id: recipient,
-            age: numb
-          }).save(function(err, data) {
-            if (!err) {
-              //console.log("age is saved in database.");
-              functionController.replyWithPlainText(recipient, process.env.ASK_FOR_HEIGHT);
-            } else {
-              console.log("age is not saved.");
-            }
-          });
-        } else {
-          UserPersonal.update({
-            user_id: recipient
-          }, {
-            $set: {
+    if(/[a-z]+\syears/i.test(text))
+    {
+    console.log("age is in alphabet");
+    var text="I was expecting an integer, could we try again?";
+    functionController.replyWithPlainText(recipient,text);
+    }
+    else
+    {
+       console.log("age is not alphabet");
+      var num = textmsg.match(/\d/g);
+      numb = num.join("");
+      //  console.log(numb);
+      UserPersonal.find({
+        user_id: recipient
+      }).exec(function(err, result) {
+        if (!err) {
+          if (_.size(result) == 0) {
+            UserPersonal({
+              user_id: recipient,
               age: numb
-            }
-          }).exec(function(err, data) {
-            if (!err) {
-              //console.log("height is saved in database.");
-              functionController.replyWithPlainText(recipient, process.env.ASK_FOR_HEIGHT);
-            } else {
-              console.log("height is not saved.");
-            }
-          });
+            }).save(function(err, data) {
+              if (!err) {
+                //console.log("age is saved in database.");
+                functionController.replyWithPlainText(recipient, process.env.ASK_FOR_HEIGHT);
+              } else {
+                console.log("age is not saved.");
+              }
+            });
+          } else {
+            UserPersonal.update({
+              user_id: recipient
+            }, {
+              $set: {
+                age: numb
+              }
+            }).exec(function(err, data) {
+              if (!err) {
+                //console.log("height is saved in database.");
+                functionController.replyWithPlainText(recipient, process.env.ASK_FOR_HEIGHT);
+              } else {
+                console.log("height is not saved.");
+              }
+            });
+          }
+        } else {
+          console.log("error in userpersonal");
         }
-      } else {
-        console.log("error in userpersonal");
-      }
-    })
+      })
+    }
+
   }
-  if (/[1-9][0-9]?\sfeet,?[1-9]?[0-9]?\s?i?n?c?h?e?s?/i.test(text)) {
+  if (/[1-9][0-9]?\sfe?e?t,?[1-9]?[0-9]?\s?i?n?c?h?e?s?/i.test(text)) {
+
     var textmsg = text;
     var num = textmsg.match(/\d/g);
     numb = num.join("");
