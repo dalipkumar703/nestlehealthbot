@@ -235,59 +235,78 @@ exports.TextMessage = function(recipient, text) {
     }
 
   }
-  if (/[1-9][0-9]?\sfe?e?t,?[1-9]?[0-9]?\s?i?n?c?h?e?s?/i.test(text)) {
+  if (/[1-9][0-9]?\sfe?e?t,?[1-9]?[0-9]?\s?i?n?c?h?e?s?/i.test(text)||/[a-z]+\sfe?e?t,?[a-z]*?\s?i?n?c?h?e?s?/i.test(text)) {
+    if(/[a-z]+\sfe?e?t,?[a-z]*?\s?i?n?c?h?e?s?/i.test(text))
+    {
+      console.log("height is in alphabet");
+      var Msg="I was expecting an integer, could we try again?";
+      functionController.replyWithPlainText(recipient,Msg);
 
-    var textmsg = text;
-    var num = textmsg.match(/\d/g);
-    numb = num.join("");
-    UserPersonal.update({
-      user_id: recipient
-    }, {
-      $set: {
-        height: numb
-      }
-    }).exec(function(err, data) {
-      if (!err) {
-        //console.log("height is saved in database.");
-        functionController.replyWithPlainText(recipient, process.env.ASK_FOR_WEIGHT);
-      } else {
-        console.log("height is not saved.");
-      }
-    });
+    }
+    else {
+      var textmsg = text;
+      var num = textmsg.match(/\d/g);
+      numb = num.join("");
+      UserPersonal.update({
+        user_id: recipient
+      }, {
+        $set: {
+          height: numb
+        }
+      }).exec(function(err, data) {
+        if (!err) {
+          //console.log("height is saved in database.");
+          functionController.replyWithPlainText(recipient, process.env.ASK_FOR_WEIGHT);
+        } else {
+          console.log("height is not saved.");
+        }
+      });
+    }
+
   }
-  if (/[1-9][0-9]?[0-9]?\sKg/i.test(text)) {
-    var textmsg = text;
-    var num = textmsg.match(/\d/g);
-    numb = num.join("");
-    UserPersonal.update({
-      user_id: recipient
-    }, {
-      $set: {
-        weight: numb
-      }
-    }).exec(function(err, data) {
-      if (!err) {
-        UserPersonal.findOne({
-          user_id: recipient
-        }).exec(function(err, data) {
-          if (!err) {
-            textMsg = "You entered - Age(" + data.age + "), Weight (" + data.weight + "), Height (" + data.height + ")";
-            title[0] = process.env.TITLE_OK;
-            title[1] = process.env.BMR_EDIT_TITLE;
-            payload[0] = process.env.PAYLOAD_USER_DETAIL_CONFIRM;
-            payload[1] = process.env.PAYLOAD_EDIT_USER_DETAIL;
-            functionController.replyWithTwoPayload(recipient, title, payload, textMsg);
-          } else {
-            console.log("problem fetching from user detail.");
-          }
-        })
-        // console.log("weight is saved in database.");
-        //textMsg=You entered - Age(40), Weight (45), Height (5)
-        //functionController.replyWithTwoPayload(event,title,payload,textMsg);
-      } else {
-        console.log("height is not saved.");
-      }
-    });
+  if (/[1-9][0-9]?[0-9]?\sKg/i.test(text)||/[a-z]+\sKg/i.test(text)) {
+    if(/[a-z]+\sKg/i.test(text))
+    {
+      console.log("weight is in alphabet");
+      var text="I was expecting an integer, could we try again?";
+      functionController.replyWithPlainText(recipient,text);
+
+    }
+    else {
+      var textmsg = text;
+      var num = textmsg.match(/\d/g);
+      numb = num.join("");
+      UserPersonal.update({
+        user_id: recipient
+      }, {
+        $set: {
+          weight: numb
+        }
+      }).exec(function(err, data) {
+        if (!err) {
+          UserPersonal.findOne({
+            user_id: recipient
+          }).exec(function(err, data) {
+            if (!err) {
+              textMsg = "You entered - Age(" + data.age + "), Weight (" + data.weight + "), Height (" + data.height + ")";
+              title[0] = process.env.TITLE_OK;
+              title[1] = process.env.BMR_EDIT_TITLE;
+              payload[0] = process.env.PAYLOAD_USER_DETAIL_CONFIRM;
+              payload[1] = process.env.PAYLOAD_EDIT_USER_DETAIL;
+              functionController.replyWithTwoPayload(recipient, title, payload, textMsg);
+            } else {
+              console.log("problem fetching from user detail.");
+            }
+          })
+          // console.log("weight is saved in database.");
+          //textMsg=You entered - Age(40), Weight (45), Height (5)
+          //functionController.replyWithTwoPayload(event,title,payload,textMsg);
+        } else {
+          console.log("height is not saved.");
+        }
+      });
+
+    }
 
   }
 }

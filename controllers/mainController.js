@@ -341,9 +341,9 @@ module.exports = function(app) {
                         } else if (/[1-9][0-9]?\syears/i.test(event.message.text)||/[1-9][0-9]?\syrs/i.test(event.message.text)||/[a-z]+\syears/i.test(event.message.text)) {//text message is end with age
                           //save age of user
                           BmrCalculateModule.TextMessage(event.sender.id, event.message.text);
-                        } else if (/[1-9][0-9]?\sfe?e?t,?[1-9]?[0-9]?\s?i?n?c?h?e?s?/i.test(event.message.text)) {//text message is end with feet,inches
+                        } else if (/[1-9][0-9]?\sfe?e?t,?[1-9]?[0-9]?\s?i?n?c?h?e?s?/i.test(event.message.text)||/[a-z]+\sfe?e?t,?[a-z]*?\s?i?n?c?h?e?s?/i.test(event.message.text)) {//text message is end with feet,inches
                           BmrCalculateModule.TextMessage(event.sender.id, event.message.text);
-                        } else if (/[1-9][0-9]?[0-9]?\sKg/i.test(event.message.text)) { //text message is end with kg
+                        } else if (/[1-9][0-9]?[0-9]?\sKg/i.test(event.message.text)||/[a-z]+\sKg/i.test(event.message.text)) { //text message is end with kg
                           //console.log("weight is received");
                           BmrCalculateModule.TextMessage(event.sender.id, event.message.text);
                         } else if (/[1-9]+\snaan/i.test(event.message.text) || /[1-9]+\sbutter\schicken/i.test(event.message.text) || /[1-9]+\splate\srice/i.test(event.message.text)) {
