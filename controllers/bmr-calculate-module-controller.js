@@ -187,7 +187,7 @@ exports.TextMessage = function(recipient, text) {
     if(/[a-z]+\syears/i.test(text))
     {
     console.log("age is in alphabet");
-    var text="I was expecting an integer, could we try again?";
+    var text=process.env.TEXT_INTEGER;
     functionController.replyWithPlainText(recipient,text);
     }
     else
@@ -239,7 +239,7 @@ exports.TextMessage = function(recipient, text) {
     if(/[a-z]+\sfe?e?t,?[a-z]*?\s?i?n?c?h?e?s?/i.test(text))
     {
       console.log("height is in alphabet");
-      var Msg="I was expecting an integer, could we try again?";
+      var Msg=process.env.TEXT_INTEGER;
       functionController.replyWithPlainText(recipient,Msg);
 
     }
@@ -268,7 +268,7 @@ exports.TextMessage = function(recipient, text) {
     if(/[a-z]+\sKg/i.test(text))
     {
       console.log("weight is in alphabet");
-      var text="I was expecting an integer, could we try again?";
+      var text=process.env.TEXT_INTEGER;
       functionController.replyWithPlainText(recipient,text);
 
     }

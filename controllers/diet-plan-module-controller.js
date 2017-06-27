@@ -239,35 +239,37 @@ exports.quickReplyPostback = function(recipient, postback) {
 
 
 
-                QuickReply.find({
-                  $or: [{
-                      payload_for: "VEGAN_DIET"
-                    },
-                    {
-                      payload_for: "VEG_DIET"
-                    },
-                    {
-                      payload_for: "EGG_DIET"
-                    },
-                    {
-                      payload_for: "NON_VEG_DIET"
-                    }
-                  ]
-                }).exec(function(err, result) {
-                  if (!err) {
-                    console.log("result", result);
-                    for (var i = 0; i < _.size(result); i++) {
-                      title[i] = result[i].title;
-                      payload1[i] = result[i].payload;
+                setTimeout(function(){
+                  QuickReply.find({
+                    $or: [{
+                        payload_for: "VEGAN_DIET"
+                      },
+                      {
+                        payload_for: "VEG_DIET"
+                      },
+                      {
+                        payload_for: "EGG_DIET"
+                      },
+                      {
+                        payload_for: "NON_VEG_DIET"
+                      }
+                    ]
+                  }).exec(function(err, result) {
+                    if (!err) {
+                      console.log("result", result);
+                      for (var i = 0; i < _.size(result); i++) {
+                        title[i] = result[i].title;
+                        payload1[i] = result[i].payload;
 
-                    }
-                    console.log("payload in quick reply:", payload1);
-                    functionController.QuickReplyForTwo(recipient, title, payload1, data[1].text);
+                      }
+                      console.log("payload in quick reply:", payload1);
+                      functionController.QuickReplyForTwo(recipient, title, payload1, data[1].text);
 
-                  } else {
-                    console.log("error in reply with url only");
-                  }
-                });
+                    } else {
+                      console.log("error in reply with url only");
+                    }
+                  });
+                },3000);
 
               } else {
                 console.log("error in retrieving from quick reply model");
