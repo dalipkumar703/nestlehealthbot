@@ -126,8 +126,8 @@ module.exports = function(app) {
               BmrCalculateModule.postback(event.sender.id, event.postback.payload);
             }
             if (event.postback.payload === "EDIT_USER_DETAIL") {
-              BmrCalculateModule.postback(event.sender.id, event.postback.payload);
 
+              BmrCalculateModule.postback(event.sender.id, event.postback.payload);
             }
             if (event.postback.payload === "VERY_ACTIVE_EXERCISE" || event.postback.payload === "MODERATE_EXERCISE" || event.postback.payload === "LIGHTLY_EXERCISE" || event.postback.payload === "SEDENTRY_EXERCISE") {
               BmrCalculateModule.postback(event.sender.id, event.postback.payload);
@@ -340,6 +340,7 @@ module.exports = function(app) {
                           GameModule.gameModuleTextMessage(event.sender.id, event.message.text);
                         } else if (/[1-9][0-9]?\syears/i.test(event.message.text)||/[1-9][0-9]?\syrs/i.test(event.message.text)||/[a-z]+\syears/i.test(event.message.text)) {//text message is end with age
                           //save age of user
+                          
                           BmrCalculateModule.TextMessage(event.sender.id, event.message.text);
                         } else if (/[1-9][0-9]?\sfe?e?t,?[1-9]?[0-9]?\s?i?n?c?h?e?s?/i.test(event.message.text)||/[a-z]+\sfe?e?t,?[a-z]*?\s?i?n?c?h?e?s?/i.test(event.message.text)) {//text message is end with feet,inches
                           BmrCalculateModule.TextMessage(event.sender.id, event.message.text);
