@@ -17,6 +17,7 @@ var ReplyWithUrl = require('../models/reply_with_url.js');
 var PlainText = require('../models/reply_with_plain_text.js');
 var ReplyWithUrlOnly = require('../models/reply_with_url_only.js');
 var ReplyWithImageOnly = require('../models/reply_with_image_only.js');
+var WebhookHistory = require('../models/webhook_history.js');
 var functionController = require('./functionController.js');
 var BmrCalculateModule = require('./bmr-calculate-module-controller.js');
 var DietPlanModule = require('./diet-plan-module-controller.js');
@@ -126,8 +127,8 @@ module.exports = function(app) {
               BmrCalculateModule.postback(event.sender.id, event.postback.payload);
             }
             if (event.postback.payload === "EDIT_USER_DETAIL") {
-              BmrCalculateModule.postback(event.sender.id, event.postback.payload);
 
+              BmrCalculateModule.postback(event.sender.id, event.postback.payload);
             }
             if (event.postback.payload === "VERY_ACTIVE_EXERCISE" || event.postback.payload === "MODERATE_EXERCISE" || event.postback.payload === "LIGHTLY_EXERCISE" || event.postback.payload === "SEDENTRY_EXERCISE") {
               BmrCalculateModule.postback(event.sender.id, event.postback.payload);
@@ -271,6 +272,7 @@ module.exports = function(app) {
               }
             } else {//message is text type
               //call facebook api to get user name and gender
+
               request({
                 url: process.env.FACEBOOK_GRAPH_URL + event.sender.id,
                 qs: {
@@ -320,8 +322,37 @@ module.exports = function(app) {
 
                       } else {//user is already stored
                         console.log("string length", _.size(event.message.text));
+                        if(/[1-9][0-9]*?/i.test(event.message.text))
+                        { //text is numeric type
+                          //find second last webhook text message
+                          WebhookHistory.findOne({}).sort({seq:-1}).skip(1).exec(function(err,data){
+                            if(!err)
+                            {
+                              console.log("data found:",data);
+                              if(data.text==process.env.ASK_FOR_AGE)
+                              {
+                              functionController.updateAge(event.sender.id,event.message.text);
+                              }
+                              else if(data.text==process.env.ASK_FOR_HEIGHT)
+                              {
+                                console.log("height update");
+                              functionController.updateHeight(event.sender.id,event.message.text);
+                              }
+                              else if(data.text==process.env.ASK_FOR_WEIGHT)
+                              {
+                                console.log("weight update");
+                                functionController.updateWeight(event.sender.id,event.message.text);
+                              }
+                              else {
+                                console.log("start bot with hi");
+                              }
+                            }
+                            else {
 
-                        if (/[1-9]?[0-9]+\sgram/i.test(event.message.text)) {//text message is end with gm
+                            }
+                          })
+                        }
+                      else if (/[1-9]?[0-9]+\sgram/i.test(event.message.text)) {//text message is end with gm
                           PortionGuidanceModule.portionGuidanceModuleTextMessage(event.sender.id, event.message.text);
                         }
                          else if (/[1-9]?[0-9]+\slitre/i.test(event.message.text)) {//text message is end with litre
@@ -340,6 +371,7 @@ module.exports = function(app) {
                           GameModule.gameModuleTextMessage(event.sender.id, event.message.text);
                         } else if (/[1-9][0-9]?\syears/i.test(event.message.text)||/[1-9][0-9]?\syrs/i.test(event.message.text)||/[a-z]+\syears/i.test(event.message.text)) {//text message is end with age
                           //save age of user
+
                           BmrCalculateModule.TextMessage(event.sender.id, event.message.text);
                         } else if (/[1-9][0-9]?\sfe?e?t,?[1-9]?[0-9]?\s?i?n?c?h?e?s?/i.test(event.message.text)||/[a-z]+\sfe?e?t,?[a-z]*?\s?i?n?c?h?e?s?/i.test(event.message.text)) {//text message is end with feet,inches
                           BmrCalculateModule.TextMessage(event.sender.id, event.message.text);
@@ -420,6 +452,15 @@ module.exports = function(app) {
                   //  console.error(error);
                 }
                 console.log("hello");
+              });
+              WebhookHistory({
+                seq:event.message.seq,
+                text:event.message.text
+              }).save(function(err,data){
+                if(!err)
+              console.log("data stored in webhook collection:",data);
+              else
+              console.log("webhook is not saved");
               });
             }
             //receivedMessage(event,textMsg)

@@ -2,6 +2,10 @@ var request = require('request');
 var _ = require('underscore');
 var QuickReply = require('../models/quick_reply.js');
 var QuickReplyText = require('../models/quick_reply_text.js');
+var UserPersonal = require('../models/user_personal.js');
+var User = require('../models/user.js');
+var dotenv = require('dotenv');
+dotenv.load();
 //HI text message send
 exports.sayHi = function(recipient, textMsg) {
   var messageData = {
@@ -521,4 +525,92 @@ exports.callAskQuestion = function(recipient, title, payload, text, url) {
 
   this.receivedMessage(recipient, title, payload, text);
   this.callSendImageOnly(recipient, url);
+}
+exports.updateAge=function(recipient,age)
+{
+  UserPersonal.find({
+    user_id: recipient
+  }).exec(function(err, result) {
+    if (!err) {
+      if (_.size(result) == 0) {
+        UserPersonal({
+          user_id: recipient,
+          age: age
+        }).save(function(err, data) {
+          if (!err) {
+            //console.log("age is saved in database.");
+            this.replyWithPlainText(recipient, process.env.ASK_FOR_HEIGHT);
+          } else {
+            console.log("age is not saved.");
+          }
+        });
+      } else {
+        UserPersonal.update({
+          user_id: recipient
+        }, {
+          $set: {
+            age: age
+          }
+        }).exec(function(err, data) {
+          if (!err) {
+            //console.log("height is saved in database.");
+          this.replyWithPlainText(recipient, process.env.ASK_FOR_HEIGHT);
+          } else {
+            console.log("height is not saved.");
+          }
+        });
+      }
+    } else {
+      console.log("error in userpersonal");
+    }
+  });
+}
+exports.updateHeight=function(recipient,height)
+{
+  UserPersonal.update({
+    user_id: recipient
+  }, {
+    $set: {
+      height: height
+    }
+  }).exec(function(err, data) {
+    if (!err) {
+      //console.log("height is saved in database.");
+      this.replyWithPlainText(recipient, process.env.ASK_FOR_WEIGHT);
+    } else {
+      console.log("height is not saved.");
+    }
+  });
+}
+exports.updateWeight=function(recipient,weight)
+{
+  UserPersonal.update({
+    user_id: recipient
+  }, {
+    $set: {
+      weight: weight
+    }
+  }).exec(function(err, data) {
+    if (!err) {
+      UserPersonal.findOne({
+        user_id: recipient
+      }).exec(function(err, data) {
+        if (!err) {
+          textMsg = "You entered - Age(" + data.age + "), Weight (" + data.weight + "), Height (" + data.height + ")";
+          title[0] = process.env.TITLE_OK;
+          title[1] = process.env.BMR_EDIT_TITLE;
+          payload[0] = process.env.PAYLOAD_USER_DETAIL_CONFIRM;
+          payload[1] = process.env.PAYLOAD_EDIT_USER_DETAIL;
+          this.replyWithTwoPayload(recipient, title, payload, textMsg);
+        } else {
+          console.log("problem fetching from user detail.");
+        }
+      })
+      // console.log("weight is saved in database.");
+      //textMsg=You entered - Age(40), Weight (45), Height (5)
+      //functionController.replyWithTwoPayload(event,title,payload,textMsg);
+    } else {
+      console.log("height is not saved.");
+    }
+  });
 }
