@@ -526,6 +526,7 @@ exports.callAskQuestion = function(recipient, title, payload, text, url) {
   this.receivedMessage(recipient, title, payload, text);
   this.callSendImageOnly(recipient, url);
 }
+/*
 exports.updateAge=function(recipient,age)
 {
   UserPersonal.find({
@@ -614,3 +615,5 @@ exports.updateWeight=function(recipient,weight)
     }
   });
 }
+
+*/

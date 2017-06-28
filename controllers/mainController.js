@@ -322,37 +322,8 @@ module.exports = function(app) {
 
                       } else {//user is already stored
                         console.log("string length", _.size(event.message.text));
-                        if(/[1-9][0-9]*?/i.test(event.message.text))
-                        { //text is numeric type
-                          //find second last webhook text message
-                          WebhookHistory.findOne({}).sort({seq:-1}).skip(1).exec(function(err,data){
-                            if(!err)
-                            {
-                              console.log("data found:",data);
-                              if(data.text==process.env.ASK_FOR_AGE)
-                              {
-                              functionController.updateAge(event.sender.id,event.message.text);
-                              }
-                              else if(data.text==process.env.ASK_FOR_HEIGHT)
-                              {
-                                console.log("height update");
-                              functionController.updateHeight(event.sender.id,event.message.text);
-                              }
-                              else if(data.text==process.env.ASK_FOR_WEIGHT)
-                              {
-                                console.log("weight update");
-                                functionController.updateWeight(event.sender.id,event.message.text);
-                              }
-                              else {
-                                console.log("start bot with hi");
-                              }
-                            }
-                            else {
 
-                            }
-                          })
-                        }
-                      else if (/[1-9]?[0-9]+\sgram/i.test(event.message.text)) {//text message is end with gm
+                       if (/[1-9]?[0-9]+\sgram/i.test(event.message.text)) {//text message is end with gm
                           PortionGuidanceModule.portionGuidanceModuleTextMessage(event.sender.id, event.message.text);
                         }
                          else if (/[1-9]?[0-9]+\slitre/i.test(event.message.text)) {//text message is end with litre
@@ -421,6 +392,112 @@ module.exports = function(app) {
                           functionController.replyWithPlainText(event.sender.id, textMsg);
                           textMsg1 = process.env.TEXT_MSG;
                           functionController.receivedMessage(event.sender.id, title, payload, textMsg1);
+                        }
+                        else if(/[1-9]?[0-9]+/i.test(event.message.text))
+                        { //text is numeric type
+                          //find second last webhook text message
+                          WebhookHistory.findOne({}).sort({seq:-1}).skip(1).exec(function(err,data){
+                            if(!err)
+                            {
+                              console.log("data found:",data);
+                              if(data.text==process.env.ASK_FOR_AGE)
+                              {
+                                UserPersonal.find({
+                                  user_id: event.sender.id
+                                }).exec(function(err, result) {
+                                  if (!err) {
+                                    if (_.size(result) == 0) {
+                                      UserPersonal({
+                                        user_id: event.sender.id,
+                                        age: event.message.text
+                                      }).save(function(err, data) {
+                                        if (!err) {
+                                          //console.log("age is saved in database.");
+                                          functionController.replyWithPlainText(event.sender.id, process.env.ASK_FOR_HEIGHT);
+                                        } else {
+                                          console.log("age is not saved.");
+                                        }
+                                      });
+                                    } else {
+                                      UserPersonal.update({
+                                        user_id: event.sender.id
+                                      }, {
+                                        $set: {
+                                          age: event.message.text
+                                        }
+                                      }).exec(function(err, data) {
+                                        if (!err) {
+                                          //console.log("height is saved in database.");
+                                          functionController.replyWithPlainText(event.sender.id, process.env.ASK_FOR_HEIGHT);
+                                        } else {
+                                          console.log("height is not saved.");
+                                        }
+                                      });
+                                    }
+                                  } else {
+                                    console.log("error in userpersonal");
+                                  }
+                                })
+                              }
+                              else if(data.text==process.env.ASK_FOR_HEIGHT)
+                              {
+                                console.log("height update");
+                                UserPersonal.update({
+                                  user_id: event.sender.id
+                                }, {
+                                  $set: {
+                                    height: event.message.text
+                                  }
+                                }).exec(function(err, data) {
+                                  if (!err) {
+                                    //console.log("height is saved in database.");
+                                    functionController.replyWithPlainText(event.sender.id, process.env.ASK_FOR_WEIGHT);
+                                  } else {
+                                    console.log("height is not saved.");
+                                  }
+                                });
+                              }
+                              else if(data.text==process.env.ASK_FOR_WEIGHT)
+                              {
+                                console.log("weight update");
+                                UserPersonal.update({
+                                  user_id: event.sender.id
+                                }, {
+                                  $set: {
+                                    weight: event.message.text
+                                  }
+                                }).exec(function(err, data) {
+                                  if (!err) {
+                                    UserPersonal.findOne({
+                                      user_id: event.sender.id
+                                    }).exec(function(err, data) {
+                                      if (!err) {
+                                        textMsg = "You entered - Age(" + data.age + "), Weight (" + data.weight + "), Height (" + data.height + ")";
+                                        title[0] = process.env.TITLE_OK;
+                                        title[1] = process.env.BMR_EDIT_TITLE;
+                                        payload[0] = process.env.PAYLOAD_USER_DETAIL_CONFIRM;
+                                        payload[1] = process.env.PAYLOAD_EDIT_USER_DETAIL;
+                                        functionController.replyWithTwoPayload(event.sender.id, title, payload, textMsg);
+                                      } else {
+                                        console.log("problem fetching from user detail.");
+                                      }
+                                    })
+                                    // console.log("weight is saved in database.");
+                                    //textMsg=You entered - Age(40), Weight (45), Height (5)
+                                    //functionController.replyWithTwoPayload(event,title,payload,textMsg);
+                                  } else {
+                                    console.log("height is not saved.");
+                                  }
+                                });
+                              }
+                              else {
+                                console.log("start bot with hi");
+                              }
+                            }
+                            else {
+
+                            }
+                          })
                         } else {
                           console.log(_.size(event.message.text));
                           let apiai = apiapp.textRequest(event.message.text, {
