@@ -341,12 +341,7 @@ module.exports = function(app) {
                         } else if (/[1-9][0-9]+\scalorie/i.test(event.message.text)) {//text message is end with calorie
                           GameModule.gameModuleTextMessage(event.sender.id, event.message.text);
                         } else if (/[1-9][0-9]?\syears/i.test(event.message.text)||/[1-9][0-9]?\syrs/i.test(event.message.text)||/[a-z]+\syears/i.test(event.message.text)) {//text message is end with age
-                          //save age of user
-<<<<<<< HEAD
-                          
-=======
-
->>>>>>> webhook
+                          //save age of use
                           BmrCalculateModule.TextMessage(event.sender.id, event.message.text);
                         } else if (/[1-9][0-9]?\sfe?e?t,?[1-9]?[0-9]?\s?i?n?c?h?e?s?/i.test(event.message.text)||/[a-z]+\sfe?e?t,?[a-z]*?\s?i?n?c?h?e?s?/i.test(event.message.text)) {//text message is end with feet,inches
                           BmrCalculateModule.TextMessage(event.sender.id, event.message.text);
