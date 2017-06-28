@@ -93,7 +93,7 @@ exports.portionGuidanceModulePostback = function(recipient, postback) {
     }).exec(function(err, data) {
       if (!err) {
         console.log("data:", data);
-        functionController.replyWithPlainText(event.sender.id, data[0].text);
+        functionController.replyWithPlainText(recipient, data[0].text);
       }
     })
   }
@@ -107,7 +107,7 @@ exports.portionGuidanceModuleTextMessage = function(recipient, text) {
   if (/[1-9]?[0-9]+\srice/i.test(text)) {
     var url = process.env.URL_RICE;
     title[0] = process.env.TITLE_ASK_MORE;
-    payload[0] = process.env.PAYLOAD_TENNIS_BAL;
+    payload[0] = process.env.PAYLOAD_TENNIS_BALL;
     var text = process.env.TENNIS_BALL_TEXT;
 
     functionController.callAskQuestion(recipient, title, payload, text, url);
