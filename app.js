@@ -1,5 +1,6 @@
 var express = require('express');
 var mainController = require('./controllers/mainController');
+var functionController = require('./controllers/functionController');
 var CronJobs=require('./controllers/cronjobsController');
 //var test=require('./controllers/test.js');
 var app = express();
@@ -16,4 +17,4 @@ app.listen(app.get('port'), function() {
 })
 console.log("hello app");
 CronJobs.callReminder();
-//functionController.setPersistentMenu();
+functionController.setPersistentMenu();

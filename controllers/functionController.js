@@ -704,3 +704,41 @@ exports.callApiAi=function(recipient,message)
   });
   apiai.end();
 }
+exports.setPersistentMenu=function()
+{
+  var messageData={
+    "setting_type" : "call_to_actions",
+    "thread_state" : "existing_thread",
+    "call_to_actions":[
+
+      {
+        "type":"postback",
+        "title":"PLAY GAME",
+        "payload":"PLAY_GAME"
+      }
+
+    ]
+  };
+  request({
+    url: process.env.FACEBOOK_PERSISTENT_MENU,
+    qs: {
+      access_token: process.env.FACEBOOK_TOKEN
+    },
+    method: "POST",
+    json: messageData
+  }, function(error, response, body) {
+    if (!error && response.statusCode == 200) {
+      var recipientId = body.recipient_id;
+      var messageId = body.message_id;
+
+      console.log("PERSISTENT MENU IS SET");
+    } else {
+      console.error("Unable to send message.");
+      //console.error(response);
+      //console.error(error);
+    }
+    console.log("hello");
+
+
+  });
+}
