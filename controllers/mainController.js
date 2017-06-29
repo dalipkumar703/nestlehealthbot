@@ -85,6 +85,10 @@ module.exports = function(app) {
         entry.messaging.forEach(function(event) {
           //message is postback type
           if (event.postback) {
+            if(event.postback.payload==="NOT_IN_MOOD_TO_PLAY_GAME")
+            {
+              functionController.replyWithPlainText(event.sender.id,process.env.TEXT_START);
+            }
             if (event.postback.payload === "PALM") {
               PortionGuidanceModule.portionGuidanceModulePostback(event.sender.id, event.postback.payload);
             }
@@ -401,93 +405,46 @@ module.exports = function(app) {
                               console.log("data found:",data);
                               if(data.text==process.env.ASK_FOR_AGE)
                               {
-                                UserPersonal.find({
-                                  user_id: event.sender.id
-                                }).exec(function(err, result) {
-                                  if (!err) {
-                                    if (_.size(result) == 0) {
-                                      UserPersonal({
-                                        user_id: event.sender.id,
-                                        age: event.message.text
-                                      }).save(function(err, data) {
-                                        if (!err) {
-                                          //console.log("age is saved in database.");
-                                          functionController.replyWithPlainText(event.sender.id, process.env.ASK_FOR_HEIGHT);
-                                        } else {
-                                          console.log("age is not saved.");
-                                        }
-                                      });
-                                    } else {
-                                      UserPersonal.update({
-                                        user_id: event.sender.id
-                                      }, {
-                                        $set: {
-                                          age: event.message.text
-                                        }
-                                      }).exec(function(err, data) {
-                                        if (!err) {
-                                          //console.log("height is saved in database.");
-                                          functionController.replyWithPlainText(event.sender.id, process.env.ASK_FOR_HEIGHT);
-                                        } else {
-                                          console.log("height is not saved.");
-                                        }
-                                      });
-                                    }
-                                  } else {
-                                    console.log("error in userpersonal");
-                                  }
-                                })
+                                functionController.updateAge(event.sender.id,event.message.text);
                               }
                               else if(data.text==process.env.ASK_FOR_HEIGHT)
                               {
                                 console.log("height update");
-                                UserPersonal.update({
-                                  user_id: event.sender.id
-                                }, {
-                                  $set: {
-                                    height: event.message.text
-                                  }
-                                }).exec(function(err, data) {
-                                  if (!err) {
-                                    //console.log("height is saved in database.");
-                                    functionController.replyWithPlainText(event.sender.id, process.env.ASK_FOR_WEIGHT);
-                                  } else {
-                                    console.log("height is not saved.");
-                                  }
-                                });
+                              functionController.updateHeight(event.sender.id,event.message.text);
                               }
                               else if(data.text==process.env.ASK_FOR_WEIGHT)
                               {
-                                console.log("weight update");
-                                UserPersonal.update({
-                                  user_id: event.sender.id
-                                }, {
-                                  $set: {
-                                    weight: event.message.text
-                                  }
-                                }).exec(function(err, data) {
-                                  if (!err) {
-                                    UserPersonal.findOne({
-                                      user_id: event.sender.id
-                                    }).exec(function(err, data) {
-                                      if (!err) {
-                                        textMsg = "You entered - Age(" + data.age + "), Weight (" + data.weight + "), Height (" + data.height + ")";
-                                        title[0] = process.env.TITLE_OK;
-                                        title[1] = process.env.BMR_EDIT_TITLE;
-                                        payload[0] = process.env.PAYLOAD_USER_DETAIL_CONFIRM;
-                                        payload[1] = process.env.PAYLOAD_EDIT_USER_DETAIL;
-                                        functionController.replyWithTwoPayload(event.sender.id, title, payload, textMsg);
-                                      } else {
-                                        console.log("problem fetching from user detail.");
-                                      }
-                                    })
-                                    // console.log("weight is saved in database.");
-                                    //textMsg=You entered - Age(40), Weight (45), Height (5)
-                                    //functionController.replyWithTwoPayload(event,title,payload,textMsg);
-                                  } else {
-                                    console.log("height is not saved.");
-                                  }
-                                });
+                              functionController.updateWeight(event.sender.id,event.message.text);
+                              }
+                              else if(data.text==process.env.TEXT_RICE)
+                              {
+                              console.log("text rice");
+                              functionController.rice(event.sender.id);
+                              }
+                              else if(data.text==process.env.TEXT_CHAPATTI)
+                              {
+                              console.log("text chapatti");
+                              functionController.chapatti(event.sender.id);
+                              }
+                              else if(data.text==process.env.TEXT_CHEESE)
+                              {
+                              console.log("text cheese");
+                              functionController.cheese(event.sender.id);
+                              }
+                              else if(data.text==process.env.TEXT_MEAT)
+                              {
+                              console.log("text MEAT");
+                              functionController.meat(event.sender.id);
+                              }
+                              else if(data.text==process.env.TEXT_DAL)
+                              {
+                              console.log("text DAL");
+                              functionController.gram(event.sender.id);
+                              }
+                              else if(data.text==process.env.TEXT_MILK)
+                              {
+                              console.log("text MILK");
+                              functionController.endAsking(event.sender.id);
                               }
                               else {
                                 console.log("start bot with hi");
@@ -497,22 +454,72 @@ module.exports = function(app) {
 
                             }
                           })
-                        } else {
-                          console.log(_.size(event.message.text));
-                          let apiai = apiapp.textRequest(event.message.text, {
-                            sessionId: process.env.API_AI_SESSION_ID // use any arbitrary id
-                          });
-                          apiai.on('response', (response) => {
-                            // Got a response from api.ai. Let's POST to Facebook Messenger
-                            let aiText = response.result.fulfillment.speech;
-                            console.log("Api ai reply:", aiText);
-                            functionController.replyWithPlainText(event.sender.id, aiText);
-                          });
+                        }
+                        else if(/[a-z]+/i.test(event.message.text))
+                        { //text is numeric type
+                          //find second last webhook text message
+                          WebhookHistory.findOne({}).sort({seq:-1}).skip(1).exec(function(err,data){
+                            if(!err)
+                            {
+                              console.log("data found:",data);
+                              if(data.text==process.env.ASK_FOR_AGE)
+                              {
 
-                          apiai.on('error', (error) => {
-                            console.log("error in api ai:", error);
-                          });
-                          apiai.end();
+                              functionController.replyWithPlainText(event.sender.id,process.env.TEXT_INTEGER);
+                              functionController.replyWithPlainText(event.sender.id,process.env.ASK_FOR_AGE);
+                              }
+                              else if(data.text==process.env.ASK_FOR_HEIGHT)
+                              {
+                                console.log("height update");
+                                functionController.replyWithPlainText(event.sender.id,process.env.TEXT_INTEGER);
+                                functionController.replyWithPlainText(event.sender.id,process.env.ASK_FOR_HEIGHT);
+                              }
+                              else if(data.text==process.env.ASK_FOR_WEIGHT)
+                              {
+                                functionController.replyWithPlainText(event.sender.id,process.env.TEXT_INTEGER);
+                                functionController.replyWithPlainText(event.sender.id,process.env.ASK_FOR_WEIGHT);
+                              }
+                              else if(data.text==process.env.TEXT_RICE)
+                              {
+                              console.log("text rice");
+                              functionController.rice(event.sender.id);
+                              }
+                              else if(data.text==process.env.TEXT_CHAPATTI)
+                              {
+                              console.log("text chapatti");
+                              functionController.chapatti(event.sender.id);
+                              }
+                              else if(data.text==process.env.TEXT_CHEESE)
+                              {
+                              console.log("text cheese");
+                              functionController.cheese(event.sender.id);
+                              }
+                              else if(data.text==process.env.TEXT_MEAT)
+                              {
+                              console.log("text MEAT");
+                              functionController.meat(event.sender.id);
+                              }
+                              else if(data.text==process.env.TEXT_DAL)
+                              {
+                              console.log("text DAL");
+                              functionController.gram(event.sender.id);
+                              }
+                              else if(data.text==process.env.TEXT_MILK)
+                              {
+                              console.log("text MILK");
+                              functionController.endAsking(event.sender.id);
+                              }
+                              else {
+                                console.log("start bot with hi");
+                                functionController.callApiAi(event.sender.id,event.message.text);
+                              }
+                            }
+                            else {
+
+                            }
+                          })
+                        } else {
+                       functionController.callApiAi(event.sender.id,event.message.text);
                         }
 
 

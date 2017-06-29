@@ -232,14 +232,14 @@ exports.quickReplyPostback = function(recipient, postback) {
               ]
             }).exec(function(err, data) {
               if (!err) {
-                for (var i = 0; i < _.size(data); i++) {
-                  console.log("data[i]", data[i]);
-                  functionController.replyWithPlainText(recipient, data[i].text);
-                }
+
 
 
 
                 setTimeout(function(){
+
+                    functionController.replyWithPlainText(recipient, data[2].text);
+
                   QuickReply.find({
                     $or: [{
                         payload_for: "VEGAN_DIET"

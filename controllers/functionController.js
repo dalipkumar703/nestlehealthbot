@@ -1,11 +1,13 @@
 var request = require('request');
 var _ = require('underscore');
+var apiai=require('apiai');
 var QuickReply = require('../models/quick_reply.js');
 var QuickReplyText = require('../models/quick_reply_text.js');
 var UserPersonal = require('../models/user_personal.js');
 var User = require('../models/user.js');
 var dotenv = require('dotenv');
 dotenv.load();
+var apiapp = apiai(process.env.API_AI_CLIENT);
 //HI text message send
 exports.sayHi = function(recipient, textMsg) {
   var messageData = {
@@ -526,7 +528,7 @@ exports.callAskQuestion = function(recipient, title, payload, text, url) {
   this.receivedMessage(recipient, title, payload, text);
   this.callSendImageOnly(recipient, url);
 }
-/*
+
 exports.updateAge=function(recipient,age)
 {
   UserPersonal.find({
@@ -539,8 +541,8 @@ exports.updateAge=function(recipient,age)
           age: age
         }).save(function(err, data) {
           if (!err) {
-            //console.log("age is saved in database.");
-            this.replyWithPlainText(recipient, process.env.ASK_FOR_HEIGHT);
+
+            exports.replyWithPlainText(recipient, process.env.ASK_FOR_HEIGHT);
           } else {
             console.log("age is not saved.");
           }
@@ -554,8 +556,7 @@ exports.updateAge=function(recipient,age)
           }
         }).exec(function(err, data) {
           if (!err) {
-            //console.log("height is saved in database.");
-          this.replyWithPlainText(recipient, process.env.ASK_FOR_HEIGHT);
+            exports.replyWithPlainText(recipient, process.env.ASK_FOR_HEIGHT);
           } else {
             console.log("height is not saved.");
           }
@@ -566,6 +567,7 @@ exports.updateAge=function(recipient,age)
     }
   });
 }
+
 exports.updateHeight=function(recipient,height)
 {
   UserPersonal.update({
@@ -577,14 +579,17 @@ exports.updateHeight=function(recipient,height)
   }).exec(function(err, data) {
     if (!err) {
       //console.log("height is saved in database.");
-      this.replyWithPlainText(recipient, process.env.ASK_FOR_WEIGHT);
+      exports.replyWithPlainText(recipient, process.env.ASK_FOR_WEIGHT);
     } else {
       console.log("height is not saved.");
     }
   });
 }
+
 exports.updateWeight=function(recipient,weight)
 {
+  var title=[];
+  var payload=[];
   UserPersonal.update({
     user_id: recipient
   }, {
@@ -602,18 +607,100 @@ exports.updateWeight=function(recipient,weight)
           title[1] = process.env.BMR_EDIT_TITLE;
           payload[0] = process.env.PAYLOAD_USER_DETAIL_CONFIRM;
           payload[1] = process.env.PAYLOAD_EDIT_USER_DETAIL;
-          this.replyWithTwoPayload(recipient, title, payload, textMsg);
+          exports.replyWithTwoPayload(recipient, title, payload, textMsg);
         } else {
           console.log("problem fetching from user detail.");
         }
       })
       // console.log("weight is saved in database.");
       //textMsg=You entered - Age(40), Weight (45), Height (5)
-      //functionController.replyWithTwoPayload(event,title,payload,textMsg);
+      //this.replyWithTwoPayload(event,title,payload,textMsg);
     } else {
       console.log("height is not saved.");
     }
   });
 }
+exports.endAsking=function(recipient)
+{
+  var title=[];
+  var button_web_url=[];
+  var url = process.env.URL_LITRE;
+ title[0] = process.env.TITLE_MORE_ON_THIS;
+ button_web_url[0] = process.env.EAT_AND_DRINK_LINK;
+  var text = process.env.MILK_TEXT;
+  this.callSendImageOnly(recipient, url);
+  this.callSendWithXPayload(recipient, 0, 0, text, button_web_url, title);
 
-*/
+}
+exports.gram=function(recipient)
+{
+  var title=[];
+  var payload=[];
+  var url =process.env.URL_GM;
+  title[0] = process.env.TITLE_ASK_MORE;
+  payload[0] = process.env.PAYLOAD_DAL;
+  var text = process.env.DAL_TEXT;
+
+  this.callAskQuestion(recipient, title, payload, text, url);
+}
+exports.meat=function(recipient)
+{
+  var title=[];
+  var payload=[];
+  var url = process.env.URL_MEAT;
+  title[0] = process.env.TITLE_ASK_MORE;
+  payload[0] = process.env.PAYLOAD_PALM;
+  var text = process.env.PALM_TEXT;
+
+  this.callAskQuestion(recipient, title, payload, text, url);
+}
+exports.compare=function(recipient)
+{
+  var title=[];
+  var payload=[];
+  var url = process.env.URL_CMP;
+  title[0] = process.env.TITLE_ASK_MORE;
+  payload[0] = process.env.PAYLOAD_CREDIT_CARD;
+  var text = process.env.CREDIT_CARD_TEXT;
+  this.callAskQuestion(recipient, title, payload, text, url);
+}
+exports.size=function(recipient)
+{
+  var title=[];
+  var payload=[];
+  var url = process.env.URL_SIZE;
+  title[0] = process.env.TITLE_ASK_MORE;
+  payload[0] = process.env.PAYLOAD_CD;
+  var text = process.env.CD_TEXT;
+
+  this.callAskQuestion(recipient, title, payload, text, url);
+}
+exports.rice=function(recipient)
+{
+  var title=[];
+  var payload=[];
+  var url = process.env.URL_RICE;
+  title[0] = process.env.TITLE_ASK_MORE;
+  payload[0] = process.env.PAYLOAD_TENNIS_BALL;
+  var text = process.env.TENNIS_BALL_TEXT;
+
+  this.callAskQuestion(recipient, title, payload, text, url);
+}
+exports.callApiAi=function(recipient,message)
+{
+  console.log(_.size(message));
+  let apiai = apiapp.textRequest(message, {
+    sessionId: process.env.API_AI_SESSION_ID // use any arbitrary id
+  });
+  apiai.on('response', (response) => {
+    // Got a response from api.ai. Let's POST to Facebook Messenger
+    let aiText = response.result.fulfillment.speech;
+    console.log("Api ai reply:", aiText);
+    this.replyWithPlainText(recipient, aiText);
+  });
+
+  apiai.on('error', (error) => {
+    console.log("error in api ai:", error);
+  });
+  apiai.end();
+}

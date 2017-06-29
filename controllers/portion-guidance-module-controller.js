@@ -105,52 +105,22 @@ exports.portionGuidanceModuleTextMessage = function(recipient, text) {
   var button_web_url = [];
   var text;
   if (/[1-9]?[0-9]+\srice/i.test(text)) {
-    var url = process.env.URL_RICE;
-    title[0] = process.env.TITLE_ASK_MORE;
-    payload[0] = process.env.PAYLOAD_TENNIS_BALL;
-    var text = process.env.TENNIS_BALL_TEXT;
-
-    functionController.callAskQuestion(recipient, title, payload, text, url);
+    functionController.rice(recipient);
   }
   if (/[a-z]+\ssize/i.test(text)) {
-    var url = process.env.URL_SIZE;
-    title[0] = process.env.TITLE_ASK_MORE;
-    payload[0] = process.env.PAYLOAD_CD;
-    text = process.env.CD_TEXT;
-
-    functionController.callAskQuestion(recipient, title, payload, text, url);
+    functionController.size(recipient);
   }
   if (/[a-z]+\scmp/i.test(text)) {
-    var url = process.env.URL_CMP;
-    title[0] = process.env.TITLE_ASK_MORE;
-    payload[0] = process.env.PAYLOAD_CREDIT_CARD;
-    text = process.env.CREDIT_CARD_TEXT;
-    functionController.callAskQuestion(recipient, title, payload, text, url);
+    functionController.compare(recipient);
   }
   if (/[a-z]+\smeat/i.test(text)) {
-    var url = process.env.URL_MEAT;
-    title[0] = process.env.TITLE_ASK_MORE;
-    payload[0] = process.env.PAYLOAD_PALM;
-    text = process.env.PALM_TEXT;
-
-    functionController.callAskQuestion(recipient, title, payload, text, url);
+    functionController.meat(recipient);
   }
   if (/[1-9]?[0-9]+\sgram/i.test(text)) {
-    var url =process.env.URL_GM;
-    title[0] = process.env.TITLE_ASK_MORE;
-    payload[0] = process.env.PAYLOAD_DAL;
-    text = process.env.DAL_TEXT;
-
-    functionController.callAskQuestion(recipient, title, payload, text, url);
+    functionController.gram(recipient);
   }
   if (/[1-9]?[0-9]+\slitre/i.test(text)) {
     console.log("litre");
-    var url = process.env.URL_LITRE;
-    title[0] = process.env.TITLE_MORE_ON_THIS;
-    button_web_url[0] = process.env.EAT_AND_DRINK_LINK;
-    text = process.env.MILK_TEXT;
-    functionController.callSendImageOnly(recipient, url);
-    functionController.callSendWithXPayload(recipient, 0, 0, text, button_web_url, title);
-
+  functionController.endAsking(recipient);
   }
 }

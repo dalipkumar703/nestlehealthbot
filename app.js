@@ -16,3 +16,4 @@ app.listen(app.get('port'), function() {
 })
 console.log("hello app");
 CronJobs.callReminder();
+//functionController.setPersistentMenu();
