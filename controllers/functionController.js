@@ -664,7 +664,7 @@ exports.compare=function(recipient)
   var text = process.env.CREDIT_CARD_TEXT;
   this.callAskQuestion(recipient, title, payload, text, url);
 }
-exports.size=function(recipient)
+exports.sizeChapatti=function(recipient)
 {
   var title=[];
   var payload=[];
@@ -741,4 +741,19 @@ exports.setPersistentMenu=function()
 
 
   });
+}
+exports.pizzaCalorie=function(recipient)
+{
+  var msg = process.env.MESSAGE;
+  var title=[];
+  var payload=[];
+  var button_web_url=[];
+  var button_web_title=[];
+  payload[0] = process.env.PAYLOAD_PORTION;
+  payload[1] = process.env.PAYLOAD_MANUAL;
+  title[0] = process.env.PORTION_GUIDANCE;
+  title[1] = process.env.READING_MANUAL;
+  button_web_title[0] = process.env.URL_TITLE;
+  button_web_url[0] = process.env.URL_LINK;
+  this.callSendWithXPayload(recipient, payload, title, msg, button_web_url, button_web_title);
 }

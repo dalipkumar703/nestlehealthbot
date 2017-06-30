@@ -108,7 +108,7 @@ exports.portionGuidanceModuleTextMessage = function(recipient, text) {
     functionController.rice(recipient);
   }
   if (/[a-z]+\ssize/i.test(text)) {
-    functionController.size(recipient);
+    functionController.sizeChapatti(recipient);
   }
   if (/[a-z]+\scmp/i.test(text)) {
     functionController.compare(recipient);

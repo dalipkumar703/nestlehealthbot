@@ -424,12 +424,12 @@ module.exports = function(app) {
                               else if(data.text==process.env.TEXT_CHAPATTI)
                               {
                               console.log("text chapatti");
-                              functionController.chapatti(event.sender.id);
+                              functionController.sizeChapatti(event.sender.id);
                               }
                               else if(data.text==process.env.TEXT_CHEESE)
                               {
                               console.log("text cheese");
-                              functionController.cheese(event.sender.id);
+                              functionController.compare(event.sender.id);
                               }
                               else if(data.text==process.env.TEXT_MEAT)
                               {
@@ -446,12 +446,18 @@ module.exports = function(app) {
                               console.log("text MILK");
                               functionController.endAsking(event.sender.id);
                               }
+                              else if(data.text==process.env.TEXT_CALORIE)
+                              {
+                              console.log("CALORIE");
+                              functionController.pizzaCalorie(event.sender.id);
+                              }
                               else {
                                 console.log("start bot with hi");
+                                functionController.callApiAi(event.sender.id,event.message.text);
                               }
                             }
                             else {
-
+                              console.log("error in webhook history");
                             }
                           })
                         }
@@ -508,6 +514,11 @@ module.exports = function(app) {
                               {
                               console.log("text MILK");
                               functionController.endAsking(event.sender.id);
+                              }
+                              else if(data.text==process.env.TEXT_CALORIE)
+                              {
+                              console.log("CALORIE");
+                              functionController.pizzaCalorie(event.sender.id);
                               }
                               else {
                                 console.log("start bot with hi");

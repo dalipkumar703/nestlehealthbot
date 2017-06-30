@@ -62,13 +62,6 @@ exports.gameModuleTextMessage = function(recipient, message) {
   var button_web_title = [];
   if (/[1-9][0-9]+\scalorie/i.test(message)) {
     console.log("pizza calorie");
-    var msg = process.env.MESSAGE;
-    payload[0] = process.env.PAYLOAD_PORTION;
-    payload[1] = process.env.PAYLOAD_MANUAL;
-    title[0] = process.env.PORTION_GUIDANCE;
-    title[1] = process.env.READING_MANUAL;
-    button_web_title[0] = process.env.URL_TITLE;
-    button_web_url[0] = process.env.URL_LINK;
-    functionController.callSendWithXPayload(recipient, payload, title, msg, button_web_url, button_web_title);
+    functionController.pizzaCalorie(recipient);
   }
 }
