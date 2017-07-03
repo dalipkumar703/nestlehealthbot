@@ -310,12 +310,60 @@ module.exports = function(app) {
                           console.log("user store:", data);
                         });
                         //not in use this if statement
-                        if (/[1-9][0-9]?\sage/i.test(event.message.text)) {
+                        if (/[1-9]?[0-9]/i.test(event.message.text)) {
                           //console.log("age is correct");
                           var textmsg = event.message.text;
                           var num = textmsg.match(/\d/g);
                           console.log(num);
-                        } else {
+                        }
+                        if(/[1-9]?[0-9]+/i.test(event.message.text))
+                        { //text is numeric type
+                          //find second last webhook text message
+                          WebhookHistory.findOne({}).sort({seq:-1}).skip(1).exec(function(err,data){
+                            if(!err)
+                            {
+                              console.log("data found:",data);
+                              if(data.text==process.env.ASK_FOR_AGE)
+                              {
+                                console.log("update age");
+                                functionController.updateAge(event.sender.id,event.message.text);
+                              }
+
+                              else {
+                                console.log("start bot with hi");
+                                functionController.callApiAi(event.sender.id,event.message.text);
+                              }
+                            }
+                            else {
+                              console.log("error in webhook history");
+                            }
+                          })
+                        }
+                        else if(/[a-z]+/i.test(event.message.text))
+                        { //text is numeric type
+                          //find second last webhook text message
+                          WebhookHistory.findOne({}).sort({seq:-1}).skip(1).exec(function(err,data){
+                            if(!err)
+                            {
+                              console.log("data found:",data);
+                              if(data.text==process.env.ASK_FOR_AGE)
+                              {
+
+                              functionController.replyWithPlainText(event.sender.id,process.env.TEXT_INTEGER);
+                              functionController.replyWithPlainText(event.sender.id,process.env.ASK_FOR_AGE);
+                              }
+
+                              else {
+                                console.log("start bot with hi");
+                                functionController.callApiAi(event.sender.id,event.message.text);
+                              }
+                            }
+                            else {
+
+                            }
+                          })
+                        }
+                         else {
                           textMsg = event.message.text + " " + userName + ", get fit with Nestle, your companion to good health.";
                           //receivedMessage(event, textMsg);title,payload
                           functionController.replyWithPlainText(event.sender.id, textMsg);
@@ -405,6 +453,7 @@ module.exports = function(app) {
                               console.log("data found:",data);
                               if(data.text==process.env.ASK_FOR_AGE)
                               {
+                                console.log("update age");
                                 functionController.updateAge(event.sender.id,event.message.text);
                               }
                               else if(data.text==process.env.ASK_FOR_HEIGHT)
