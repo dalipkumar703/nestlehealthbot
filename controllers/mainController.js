@@ -83,8 +83,8 @@ module.exports = function(app) {
 
         // Iterate over each messaging event
         entry.messaging.forEach(function(event) {
-          //message is postback type
-          if (event.postback) {
+
+           if (event.postback) { //message is postback type
             if(event.postback.payload==="NOT_IN_MOOD_TO_PLAY_GAME")
             {
               functionController.replyWithPlainText(event.sender.id,process.env.TEXT_START);
@@ -276,326 +276,347 @@ module.exports = function(app) {
               }
             } else {//message is text type
               //call facebook api to get user name and gender
+                  if(event.sender.id!=process.env.PAGE_ID)
+                  {
+                    request({
+                      url: process.env.FACEBOOK_GRAPH_URL + event.sender.id,
+                      qs: {
+                        access_token: process.env.FACEBOOK_TOKEN,
+                      },
+                      method: "GET"
+                    }, function(error, response, body) {
+                      if (!error && response.statusCode == 200) {
+                        var parsed = JSON.parse(response.body);
+                        var userName = parsed.first_name;
+                        var gender = parsed.gender;
+                        //find if user already stored in database
+                        User.findOne({
+                          user_id: event.sender.id
+                        }).exec(function(err, result) {
+                          if (!err) {
+                            title[0] = process.env.TITLE;
+                            payload[0] = process.env.PAYLOAD_TITLE;
+                            var re = new Regex(/[1-99][Age]+/);
+                             //user is not stored
+                            if (_.size(result) == 0) {
+                             //save user detail
+                              User({
+                                user_id: event.sender.id,
+                                name: userName,
+                                gender: gender,
+                                is_bmr: false,
+                                is_reminder: false
+                              }).save(function(err, data) {
+                                if (err) throw err;
+                                console.log("user store:", data);
+                              });
+                              //not in use this if statement
+                              if (/[1-9]?[0-9]/i.test(event.message.text)) {
+                                //console.log("age is correct");
+                                var textmsg = event.message.text;
+                                var num = textmsg.match(/\d/g);
+                                console.log(num);
+                              }
+                              if(/[1-9]?[0-9]+/i.test(event.message.text))
+                              { //text is numeric type
+                                //find second last webhook text message
+                                WebhookHistory.findOne({}).sort({seq:-1}).skip(1).exec(function(err,data){
+                                  if(!err)
+                                  {
+                                    if(_.size(data)==0)
+                                    {
+                                      console.log("web history not found");
+                                      console.log("start bot with hi");
+                                      functionController.callApiAi(event.sender.id,event.message.text);
+                                    }
+                                    else {
+                                      console.log("data found:",data);
+                                      if(data.text==process.env.ASK_FOR_AGE)
+                                      {
+                                        console.log("update age");
+                                        functionController.updateAge(event.sender.id,event.message.text);
+                                      }
 
-              request({
-                url: process.env.FACEBOOK_GRAPH_URL + event.sender.id,
-                qs: {
-                  access_token: process.env.FACEBOOK_TOKEN,
-                },
-                method: "GET"
-              }, function(error, response, body) {
-                if (!error && response.statusCode == 200) {
-                  var parsed = JSON.parse(response.body);
-                  var userName = parsed.first_name;
-                  var gender = parsed.gender;
-                  //find if user already stored in database
-                  User.findOne({
-                    user_id: event.sender.id
-                  }).exec(function(err, result) {
-                    if (!err) {
-                      title[0] = process.env.TITLE;
-                      payload[0] = process.env.PAYLOAD_TITLE;
-                      var re = new Regex(/[1-99][Age]+/);
-                       //user is not stored
-                      if (_.size(result) == 0) {
-                       //save user detail
-                        User({
-                          user_id: event.sender.id,
-                          name: userName,
-                          gender: gender,
-                          is_bmr: false,
-                          is_reminder: false
-                        }).save(function(err, data) {
-                          if (err) throw err;
-                          console.log("user store:", data);
+                                      else {
+                                        console.log("start bot with hi");
+                                        functionController.callApiAi(event.sender.id,event.message.text);
+                                      }
+                                    }
+
+                                  }
+                                  else {
+                                    console.log("error in webhook history");
+                                  }
+                                })
+                              }
+                              else if(/[a-z]+/i.test(event.message.text))
+                              { //text is numeric type
+                                //find second last webhook text message
+                                WebhookHistory.findOne({}).sort({seq:-1}).skip(1).exec(function(err,data){
+                                  if(!err)
+                                  {
+                                    if(_.size(data)==0)
+                                    {
+                                      console.log("web history not found");
+                                      console.log("start bot with hi");
+                                      functionController.callApiAi(event.sender.id,event.message.text);
+                                    }
+                                    else {
+                                      console.log("data found:",data);
+                                      if(data.text==process.env.ASK_FOR_AGE)
+                                      {
+
+                                      functionController.replyWithPlainText(event.sender.id,process.env.TEXT_INTEGER);
+                                      functionController.replyWithPlainText(event.sender.id,process.env.ASK_FOR_AGE);
+                                      }
+
+                                      else {
+                                        console.log("start bot with hi");
+                                        functionController.callApiAi(event.sender.id,event.message.text);
+                                      }
+                                    }
+
+                                  }
+                                  else {
+
+                                  }
+                                })
+                              }
+                               else {
+                                textMsg = event.message.text + " " + userName + ", get fit with Nestle, your companion to good health.";
+                                //receivedMessage(event, textMsg);title,payload
+                                functionController.replyWithPlainText(event.sender.id, textMsg);
+                                textMsg1 = "You need a variety of nutrients to strengthen your performance and endurance. Let's guide you on daily nutrition. To start over type \"Hi\" any time.";
+                                functionController.receivedMessage(event.sender.id, title, payload, textMsg1);
+
+                              }
+
+                            } else {//user is already stored
+                              console.log("string length", _.size(event.message.text));
+
+                             if (/[1-9]?[0-9]+\sgram/i.test(event.message.text)) {//text message is end with gm
+                                PortionGuidanceModule.portionGuidanceModuleTextMessage(event.sender.id, event.message.text);
+                              }
+                               else if (/[1-9]?[0-9]+\slitre/i.test(event.message.text)) {//text message is end with litre
+                                PortionGuidanceModule.portionGuidanceModuleTextMessage(event.sender.id, event.message.text);
+
+                              } else if (/[1-9]?[0-9]+\srice/i.test(event.message.text)) {//text message is end with rice
+
+                                PortionGuidanceModule.portionGuidanceModuleTextMessage(event.sender.id, event.message.text);
+                              } else if (/[a-z]+\smeat/i.test(event.message.text)) {//text message is end with meat
+                                PortionGuidanceModule.portionGuidanceModuleTextMessage(event.sender.id, event.message.text);
+                              } else if (/[a-z]+\ssize/i.test(event.message.text)) {//text message is end with size
+                                PortionGuidanceModule.portionGuidanceModuleTextMessage(event.sender.id, event.message.text);
+                              } else if (/[a-z]+\scmp/i.test(event.message.text)) {//text message is end with cmp
+                                PortionGuidanceModule.portionGuidanceModuleTextMessage(event.sender.id, event.message.text);
+                              } else if (/[1-9][0-9]+\scalorie/i.test(event.message.text)) {//text message is end with calorie
+                                GameModule.gameModuleTextMessage(event.sender.id, event.message.text);
+                              } else if (/[1-9][0-9]?\syears/i.test(event.message.text)||/[1-9][0-9]?\syrs/i.test(event.message.text)||/[a-z]+\syears/i.test(event.message.text)) {//text message is end with age
+                                //save age of use
+                                BmrCalculateModule.TextMessage(event.sender.id, event.message.text);
+                              } else if (/[1-9][0-9]?\sfe?e?t,?[1-9]?[0-9]?\s?i?n?c?h?e?s?/i.test(event.message.text)||/[a-z]+\sfe?e?t,?[a-z]*?\s?i?n?c?h?e?s?/i.test(event.message.text)) {//text message is end with feet,inches
+                                BmrCalculateModule.TextMessage(event.sender.id, event.message.text);
+                              } else if (/[1-9][0-9]?[0-9]?\sKg/i.test(event.message.text)||/[a-z]+\sKg/i.test(event.message.text)) { //text message is end with kg
+                                //console.log("weight is received");
+                                BmrCalculateModule.TextMessage(event.sender.id, event.message.text);
+                              } else if (/[1-9]+\snaan/i.test(event.message.text) || /[1-9]+\sbutter\schicken/i.test(event.message.text) || /[1-9]+\splate\srice/i.test(event.message.text)) {
+                                //text message is end with naan, butter chicken ...
+                                 //call calorie calculate api for naan, butter chicken ...
+                                request({
+                                  url: process.env.GET_CALORIE_URL + event.message.text,
+                                  method: "GET"
+                                }, function(error, response, body) {
+                                  if (!error) {
+                                    var result = JSON.parse(response.body);
+                                    console.log("result:", result);
+                                    //get user name
+                                    User.find({
+                                      user_id: event.sender.id
+                                    }).exec(function(err, data) {
+                                      if (!err) {
+                                        console.log("name", data);
+                                        var textMsg = "Hey " + data[0].name + ", Here'\s your answer\n" + result.set_variables.totalcalories + "\n Make sure you read the label and control the portion you take.";
+                                        title[0] = process.env.PORTION_GUIDANCE;
+                                        title[1] = process.env.READING_MANUAL;
+                                        payload[0] = process.env.PAYLOAD_PORTION;
+                                        payload[1] = process.env.PAYLOAD_MANUAL;
+                                      //reply with two payload
+                                        functionController.replyWithTwoPayload(event.sender.id, title, payload, textMsg);
+                                      }
+                                    })
+
+                                  } else {
+                                    console.error("Unable to send message.");
+                                    //console.error(response);
+                                    console.error(error);
+                                  }
+                                  console.log("hello");
+
+
+                                });
+
+                              } else if (/hi/i.test(event.message.text)) {//start bot with hi message
+
+                                textMsg = event.message.text + " " + userName + ", get fit with Nestle, your companion to good health.";
+                                //receivedMessage(event, textMsg);title,payload
+                                functionController.replyWithPlainText(event.sender.id, textMsg);
+                                textMsg1 = process.env.TEXT_MSG;
+                                functionController.receivedMessage(event.sender.id, title, payload, textMsg1);
+                              }
+                              else if(/[1-9]?[0-9]+/i.test(event.message.text))
+                              { //text is numeric type
+                                //find second last webhook text message
+                                WebhookHistory.findOne({}).skip(1).sort({seq:-1}).exec(function(err,data){
+                                  if(!err)
+                                  {
+                                    console.log("data found ",data);
+                                    if(data.text==process.env.ASK_FOR_AGE)
+                                    {
+                                      console.log("update age");
+                                      functionController.updateAge(event.sender.id,event.message.text);
+                                    }
+                                    else if(data.text==process.env.ASK_FOR_HEIGHT)
+                                    {
+                                      console.log("height update");
+                                    functionController.updateHeight(event.sender.id,event.message.text);
+                                    }
+                                    else if(data.text==process.env.ASK_FOR_WEIGHT)
+                                    {
+                                    functionController.updateWeight(event.sender.id,event.message.text);
+                                    }
+                                    else if(data.text==process.env.TEXT_RICE)
+                                    {
+                                    console.log("text rice");
+                                    functionController.rice(event.sender.id);
+                                    }
+                                    else if(data.text==process.env.TEXT_CHAPATTI)
+                                    {
+                                    console.log("text chapatti");
+                                    functionController.sizeChapatti(event.sender.id);
+                                    }
+                                    else if(data.text==process.env.TEXT_CHEESE)
+                                    {
+                                    console.log("text cheese");
+                                    functionController.compare(event.sender.id);
+                                    }
+                                    else if(data.text==process.env.TEXT_MEAT)
+                                    {
+                                    console.log("text MEAT");
+                                    functionController.meat(event.sender.id);
+                                    }
+                                    else if(data.text==process.env.TEXT_DAL)
+                                    {
+                                    console.log("text DAL");
+                                    functionController.gram(event.sender.id);
+                                    }
+                                    else if(data.text==process.env.TEXT_MILK)
+                                    {
+                                    console.log("text MILK");
+                                    functionController.endAsking(event.sender.id);
+                                    }
+                                    else if(data.text==process.env.TEXT_CALORIE)
+                                    {
+                                    console.log("CALORIE");
+                                    functionController.pizzaCalorie(event.sender.id);
+                                    }
+                                    else {
+                                      console.log("start bot with hi");
+                                      functionController.callApiAi(event.sender.id,event.message.text);
+                                    }
+                                  }
+                                  else {
+                                    console.log("error in webhook history");
+                                  }
+                                })
+                              }
+                              else if(/[a-z]+/i.test(event.message.text))
+                              { //text is numeric type
+                                //find second last webhook text message
+                                WebhookHistory.findOne({}).skip(1).sort({seq:-1}).exec(function(err,data){
+                                  if(!err)
+                                  {
+                                    console.log("data found:",data);
+                                    if(data.text==process.env.ASK_FOR_AGE)
+                                    {
+
+                                    functionController.replyWithPlainText(event.sender.id,process.env.TEXT_INTEGER);
+                                    functionController.replyWithPlainText(event.sender.id,process.env.ASK_FOR_AGE);
+                                    }
+                                    else if(data.text==process.env.ASK_FOR_HEIGHT)
+                                    {
+                                      console.log("height update");
+                                      functionController.replyWithPlainText(event.sender.id,process.env.TEXT_INTEGER);
+                                      functionController.replyWithPlainText(event.sender.id,process.env.ASK_FOR_HEIGHT);
+                                    }
+                                    else if(data.text==process.env.ASK_FOR_WEIGHT)
+                                    {
+                                      functionController.replyWithPlainText(event.sender.id,process.env.TEXT_INTEGER);
+                                      functionController.replyWithPlainText(event.sender.id,process.env.ASK_FOR_WEIGHT);
+                                    }
+                                    else if(data.text==process.env.TEXT_RICE)
+                                    {
+                                    console.log("text rice");
+                                    functionController.rice(event.sender.id);
+                                    }
+                                    else if(data.text==process.env.TEXT_CHAPATTI)
+                                    {
+                                    console.log("text chapatti");
+                                    functionController.chapatti(event.sender.id);
+                                    }
+                                    else if(data.text==process.env.TEXT_CHEESE)
+                                    {
+                                    console.log("text cheese");
+                                    functionController.cheese(event.sender.id);
+                                    }
+                                    else if(data.text==process.env.TEXT_MEAT)
+                                    {
+                                    console.log("text MEAT");
+                                    functionController.meat(event.sender.id);
+                                    }
+                                    else if(data.text==process.env.TEXT_DAL)
+                                    {
+                                    console.log("text DAL");
+                                    functionController.gram(event.sender.id);
+                                    }
+                                    else if(data.text==process.env.TEXT_MILK)
+                                    {
+                                    console.log("text MILK");
+                                    functionController.endAsking(event.sender.id);
+                                    }
+                                    else if(data.text==process.env.TEXT_CALORIE)
+                                    {
+                                    console.log("CALORIE");
+                                    functionController.pizzaCalorie(event.sender.id);
+                                    }
+                                    else {
+                                      console.log("start bot with hi");
+                                      functionController.callApiAi(event.sender.id,event.message.text);
+                                    }
+                                  }
+                                  else {
+
+                                  }
+                                })
+                              } else {
+                             functionController.callApiAi(event.sender.id,event.message.text);
+                              }
+
+
+                            }
+                          } else {
+                            // error handling
+                            console.log("error in find command");
+                          };
                         });
-                        //not in use this if statement
-                        if (/[1-9]?[0-9]/i.test(event.message.text)) {
-                          //console.log("age is correct");
-                          var textmsg = event.message.text;
-                          var num = textmsg.match(/\d/g);
-                          console.log(num);
-                        }
-                        if(/[1-9]?[0-9]+/i.test(event.message.text))
-                        { //text is numeric type
-                          //find second last webhook text message
-                          WebhookHistory.findOne({}).sort({seq:-1}).skip(1).exec(function(err,data){
-                            if(!err)
-                            {
-                              console.log("data found:",data);
-                              if(data.text==process.env.ASK_FOR_AGE)
-                              {
-                                console.log("update age");
-                                functionController.updateAge(event.sender.id,event.message.text);
-                              }
-
-                              else {
-                                console.log("start bot with hi");
-                                functionController.callApiAi(event.sender.id,event.message.text);
-                              }
-                            }
-                            else {
-                              console.log("error in webhook history");
-                            }
-                          })
-                        }
-                        else if(/[a-z]+/i.test(event.message.text))
-                        { //text is numeric type
-                          //find second last webhook text message
-                          WebhookHistory.findOne({}).sort({seq:-1}).skip(1).exec(function(err,data){
-                            if(!err)
-                            {
-                              console.log("data found:",data);
-                              if(data.text==process.env.ASK_FOR_AGE)
-                              {
-
-                              functionController.replyWithPlainText(event.sender.id,process.env.TEXT_INTEGER);
-                              functionController.replyWithPlainText(event.sender.id,process.env.ASK_FOR_AGE);
-                              }
-
-                              else {
-                                console.log("start bot with hi");
-                                functionController.callApiAi(event.sender.id,event.message.text);
-                              }
-                            }
-                            else {
-
-                            }
-                          })
-                        }
-                         else {
-                          textMsg = event.message.text + " " + userName + ", get fit with Nestle, your companion to good health.";
-                          //receivedMessage(event, textMsg);title,payload
-                          functionController.replyWithPlainText(event.sender.id, textMsg);
-                          textMsg1 = "You need a variety of nutrients to strengthen your performance and endurance. Let's guide you on daily nutrition. To start over type \"Hi\" any time.";
-                          functionController.receivedMessage(event.sender.id, title, payload, textMsg1);
-
-                        }
-
-                      } else {//user is already stored
-                        console.log("string length", _.size(event.message.text));
-
-                       if (/[1-9]?[0-9]+\sgram/i.test(event.message.text)) {//text message is end with gm
-                          PortionGuidanceModule.portionGuidanceModuleTextMessage(event.sender.id, event.message.text);
-                        }
-                         else if (/[1-9]?[0-9]+\slitre/i.test(event.message.text)) {//text message is end with litre
-                          PortionGuidanceModule.portionGuidanceModuleTextMessage(event.sender.id, event.message.text);
-
-                        } else if (/[1-9]?[0-9]+\srice/i.test(event.message.text)) {//text message is end with rice
-
-                          PortionGuidanceModule.portionGuidanceModuleTextMessage(event.sender.id, event.message.text);
-                        } else if (/[a-z]+\smeat/i.test(event.message.text)) {//text message is end with meat
-                          PortionGuidanceModule.portionGuidanceModuleTextMessage(event.sender.id, event.message.text);
-                        } else if (/[a-z]+\ssize/i.test(event.message.text)) {//text message is end with size
-                          PortionGuidanceModule.portionGuidanceModuleTextMessage(event.sender.id, event.message.text);
-                        } else if (/[a-z]+\scmp/i.test(event.message.text)) {//text message is end with cmp
-                          PortionGuidanceModule.portionGuidanceModuleTextMessage(event.sender.id, event.message.text);
-                        } else if (/[1-9][0-9]+\scalorie/i.test(event.message.text)) {//text message is end with calorie
-                          GameModule.gameModuleTextMessage(event.sender.id, event.message.text);
-                        } else if (/[1-9][0-9]?\syears/i.test(event.message.text)||/[1-9][0-9]?\syrs/i.test(event.message.text)||/[a-z]+\syears/i.test(event.message.text)) {//text message is end with age
-                          //save age of use
-                          BmrCalculateModule.TextMessage(event.sender.id, event.message.text);
-                        } else if (/[1-9][0-9]?\sfe?e?t,?[1-9]?[0-9]?\s?i?n?c?h?e?s?/i.test(event.message.text)||/[a-z]+\sfe?e?t,?[a-z]*?\s?i?n?c?h?e?s?/i.test(event.message.text)) {//text message is end with feet,inches
-                          BmrCalculateModule.TextMessage(event.sender.id, event.message.text);
-                        } else if (/[1-9][0-9]?[0-9]?\sKg/i.test(event.message.text)||/[a-z]+\sKg/i.test(event.message.text)) { //text message is end with kg
-                          //console.log("weight is received");
-                          BmrCalculateModule.TextMessage(event.sender.id, event.message.text);
-                        } else if (/[1-9]+\snaan/i.test(event.message.text) || /[1-9]+\sbutter\schicken/i.test(event.message.text) || /[1-9]+\splate\srice/i.test(event.message.text)) {
-                          //text message is end with naan, butter chicken ...
-                           //call calorie calculate api for naan, butter chicken ...
-                          request({
-                            url: process.env.GET_CALORIE_URL + event.message.text,
-                            method: "GET"
-                          }, function(error, response, body) {
-                            if (!error) {
-                              var result = JSON.parse(response.body);
-                              console.log("result:", result);
-                              //get user name
-                              User.find({
-                                user_id: event.sender.id
-                              }).exec(function(err, data) {
-                                if (!err) {
-                                  console.log("name", data);
-                                  var textMsg = "Hey " + data[0].name + ", Here'\s your answer\n" + result.set_variables.totalcalories + "\n Make sure you read the label and control the portion you take.";
-                                  title[0] = process.env.PORTION_GUIDANCE;
-                                  title[1] = process.env.READING_MANUAL;
-                                  payload[0] = process.env.PAYLOAD_PORTION;
-                                  payload[1] = process.env.PAYLOAD_MANUAL;
-                                //reply with two payload
-                                  functionController.replyWithTwoPayload(event.sender.id, title, payload, textMsg);
-                                }
-                              })
-
-                            } else {
-                              console.error("Unable to send message.");
-                              //console.error(response);
-                              console.error(error);
-                            }
-                            console.log("hello");
-
-
-                          });
-
-                        } else if (/hi/i.test(event.message.text)) {//start bot with hi message
-
-                          textMsg = event.message.text + " " + userName + ", get fit with Nestle, your companion to good health.";
-                          //receivedMessage(event, textMsg);title,payload
-                          functionController.replyWithPlainText(event.sender.id, textMsg);
-                          textMsg1 = process.env.TEXT_MSG;
-                          functionController.receivedMessage(event.sender.id, title, payload, textMsg1);
-                        }
-                        else if(/[1-9]?[0-9]+/i.test(event.message.text))
-                        { //text is numeric type
-                          //find second last webhook text message
-                          WebhookHistory.findOne({}).skip(1).sort({seq:-1}).exec(function(err,data){
-                            if(!err)
-                            {
-                              console.log("data found ",data);
-                              if(data.text==process.env.ASK_FOR_AGE)
-                              {
-                                console.log("update age");
-                                functionController.updateAge(event.sender.id,event.message.text);
-                              }
-                              else if(data.text==process.env.ASK_FOR_HEIGHT)
-                              {
-                                console.log("height update");
-                              functionController.updateHeight(event.sender.id,event.message.text);
-                              }
-                              else if(data.text==process.env.ASK_FOR_WEIGHT)
-                              {
-                              functionController.updateWeight(event.sender.id,event.message.text);
-                              }
-                              else if(data.text==process.env.TEXT_RICE)
-                              {
-                              console.log("text rice");
-                              functionController.rice(event.sender.id);
-                              }
-                              else if(data.text==process.env.TEXT_CHAPATTI)
-                              {
-                              console.log("text chapatti");
-                              functionController.sizeChapatti(event.sender.id);
-                              }
-                              else if(data.text==process.env.TEXT_CHEESE)
-                              {
-                              console.log("text cheese");
-                              functionController.compare(event.sender.id);
-                              }
-                              else if(data.text==process.env.TEXT_MEAT)
-                              {
-                              console.log("text MEAT");
-                              functionController.meat(event.sender.id);
-                              }
-                              else if(data.text==process.env.TEXT_DAL)
-                              {
-                              console.log("text DAL");
-                              functionController.gram(event.sender.id);
-                              }
-                              else if(data.text==process.env.TEXT_MILK)
-                              {
-                              console.log("text MILK");
-                              functionController.endAsking(event.sender.id);
-                              }
-                              else if(data.text==process.env.TEXT_CALORIE)
-                              {
-                              console.log("CALORIE");
-                              functionController.pizzaCalorie(event.sender.id);
-                              }
-                              else {
-                                console.log("start bot with hi");
-                                functionController.callApiAi(event.sender.id,event.message.text);
-                              }
-                            }
-                            else {
-                              console.log("error in webhook history");
-                            }
-                          })
-                        }
-                        else if(/[a-z]+/i.test(event.message.text))
-                        { //text is numeric type
-                          //find second last webhook text message
-                          WebhookHistory.findOne({}).skip(1).sort({seq:-1}).exec(function(err,data){
-                            if(!err)
-                            {
-                              console.log("data found:",data);
-                              if(data.text==process.env.ASK_FOR_AGE)
-                              {
-
-                              functionController.replyWithPlainText(event.sender.id,process.env.TEXT_INTEGER);
-                              functionController.replyWithPlainText(event.sender.id,process.env.ASK_FOR_AGE);
-                              }
-                              else if(data.text==process.env.ASK_FOR_HEIGHT)
-                              {
-                                console.log("height update");
-                                functionController.replyWithPlainText(event.sender.id,process.env.TEXT_INTEGER);
-                                functionController.replyWithPlainText(event.sender.id,process.env.ASK_FOR_HEIGHT);
-                              }
-                              else if(data.text==process.env.ASK_FOR_WEIGHT)
-                              {
-                                functionController.replyWithPlainText(event.sender.id,process.env.TEXT_INTEGER);
-                                functionController.replyWithPlainText(event.sender.id,process.env.ASK_FOR_WEIGHT);
-                              }
-                              else if(data.text==process.env.TEXT_RICE)
-                              {
-                              console.log("text rice");
-                              functionController.rice(event.sender.id);
-                              }
-                              else if(data.text==process.env.TEXT_CHAPATTI)
-                              {
-                              console.log("text chapatti");
-                              functionController.chapatti(event.sender.id);
-                              }
-                              else if(data.text==process.env.TEXT_CHEESE)
-                              {
-                              console.log("text cheese");
-                              functionController.cheese(event.sender.id);
-                              }
-                              else if(data.text==process.env.TEXT_MEAT)
-                              {
-                              console.log("text MEAT");
-                              functionController.meat(event.sender.id);
-                              }
-                              else if(data.text==process.env.TEXT_DAL)
-                              {
-                              console.log("text DAL");
-                              functionController.gram(event.sender.id);
-                              }
-                              else if(data.text==process.env.TEXT_MILK)
-                              {
-                              console.log("text MILK");
-                              functionController.endAsking(event.sender.id);
-                              }
-                              else if(data.text==process.env.TEXT_CALORIE)
-                              {
-                              console.log("CALORIE");
-                              functionController.pizzaCalorie(event.sender.id);
-                              }
-                              else {
-                                console.log("start bot with hi");
-                                functionController.callApiAi(event.sender.id,event.message.text);
-                              }
-                            }
-                            else {
-
-                            }
-                          })
-                        } else {
-                       functionController.callApiAi(event.sender.id,event.message.text);
-                        }
-
-
+                      } else {
+                        console.error("Unable to send message.");
+                        //  console.error(response);
+                        //  console.error(error);
                       }
-                    } else {
-                      // error handling
-                      console.log("error in find command");
-                    };
-                  });
-                } else {
-                  console.error("Unable to send message.");
-                  //  console.error(response);
-                  //  console.error(error);
-                }
-                console.log("hello");
-              });
+                      console.log("hello");
+                    });
+                  }
+
               WebhookHistory({
                 seq:event.message.seq,
                 text:event.message.text
