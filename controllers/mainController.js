@@ -447,10 +447,10 @@ module.exports = function(app) {
                         else if(/[1-9]?[0-9]+/i.test(event.message.text))
                         { //text is numeric type
                           //find second last webhook text message
-                          WebhookHistory.findOne({}).sort({seq:-1}).skip(1).exec(function(err,data){
+                          WebhookHistory.findOne({}).skip(1).sort({seq:-1}).exec(function(err,data){
                             if(!err)
                             {
-                              console.log("data found:",data);
+                              console.log("data found ",data);
                               if(data.text==process.env.ASK_FOR_AGE)
                               {
                                 console.log("update age");
@@ -513,7 +513,7 @@ module.exports = function(app) {
                         else if(/[a-z]+/i.test(event.message.text))
                         { //text is numeric type
                           //find second last webhook text message
-                          WebhookHistory.findOne({}).sort({seq:-1}).skip(1).exec(function(err,data){
+                          WebhookHistory.findOne({}).skip(1).sort({seq:-1}).exec(function(err,data){
                             if(!err)
                             {
                               console.log("data found:",data);
