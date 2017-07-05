@@ -377,7 +377,9 @@ exports.replyWithUrlOnly = function(recipient, title, subtitle, image_url, butto
           template_type: "generic",
           elements: [{
               title: title[0],
+              item_url: image_url[0],
               image_url: image_url[0],
+
               buttons: [{
                 type: "web_url",
                 url: button_web_url[0],
@@ -386,7 +388,9 @@ exports.replyWithUrlOnly = function(recipient, title, subtitle, image_url, butto
               }],
             }, {
               title: title[1],
+              item_url: image_url[1],
               image_url: image_url[1],
+
               buttons: [{
                 type: "web_url",
                 url: button_web_url[1],
@@ -396,7 +400,9 @@ exports.replyWithUrlOnly = function(recipient, title, subtitle, image_url, butto
             },
             {
               title: title[2],
+              item_url: image_url[2],
               image_url: image_url[2],
+
               buttons: [{
                 type: "web_url",
                 url: button_web_url[2],
@@ -406,7 +412,9 @@ exports.replyWithUrlOnly = function(recipient, title, subtitle, image_url, butto
             },
             {
               title: title[3],
+              item_url: image_url[3],
               image_url: image_url[3],
+
               buttons: [{
                 type: "web_url",
                 url: button_web_url[3],
@@ -416,7 +424,9 @@ exports.replyWithUrlOnly = function(recipient, title, subtitle, image_url, butto
             },
             {
               title: title[4],
+              item_url: image_url[4],
               image_url: image_url[4],
+
               buttons: [{
                 type: "web_url",
                 url: button_web_url[4],
@@ -426,7 +436,9 @@ exports.replyWithUrlOnly = function(recipient, title, subtitle, image_url, butto
             },
             {
               title: title[5],
+              item_url: image_url[5],
               image_url: image_url[5],
+
               buttons: [{
                 type: "web_url",
                 url: button_web_url[5],
@@ -436,7 +448,9 @@ exports.replyWithUrlOnly = function(recipient, title, subtitle, image_url, butto
             },
             {
               title: title[6],
+              item_url: image_url[6],
               image_url: image_url[6],
+
               buttons: [{
                 type: "web_url",
                 url: button_web_url[6],
@@ -756,4 +770,42 @@ exports.pizzaCalorie=function(recipient)
   button_web_title[0] = process.env.URL_TITLE;
   button_web_url[0] = process.env.URL_LINK;
   this.callSendWithXPayload(recipient, payload, title, msg, button_web_url, button_web_title);
+}
+//calorie for particualur dish
+exports.calorieForDish=function(recipient,text)
+{
+  var title=[];
+  var payload=[];
+  request({
+    url: process.env.GET_CALORIE_URL + text,
+    method: "GET"
+  }, function(error, response, body) {
+    if (!error) {
+      var result = JSON.parse(response.body);
+      console.log("result:", result);
+      //get user name
+      User.find({
+        user_id: recipient
+      }).exec(function(err, data) {
+        if (!err) {
+          console.log("name", data);
+          var textMsg = "Hey " + data[0].name + ", Here'\s your answer\n" + result.set_variables.totalcalories + "\n Make sure you read the label and control the portion you take.";
+          title[0] = process.env.PORTION_GUIDANCE;
+          title[1] = process.env.READING_MANUAL;
+          payload[0] = process.env.PAYLOAD_PORTION;
+          payload[1] = process.env.PAYLOAD_MANUAL;
+        //reply with two payload
+          exports.replyWithTwoPayload(recipient, title, payload, textMsg);
+        }
+      })
+
+    } else {
+      console.error("Unable to send message.");
+      //console.error(response);
+      console.error(error);
+    }
+    console.log("hello");
+
+
+  });
 }

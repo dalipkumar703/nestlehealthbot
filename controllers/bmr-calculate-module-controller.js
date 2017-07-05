@@ -86,7 +86,7 @@ exports.postback = function(recipient, postback) {
             console.log("user data:", result.gender);
             console.log("exercise type:", exercise);
             request({
-              url: process.env.BMR_CALCULATE_URL + result.gender + "&height=" + data.height + "&age=" + data.age + "&userId=" + recipient + "&weight=" + data.weight + "&exerciseLevel=" + exercise,
+              url: process.env.BMR_CALCULATE_URL+result.gender + "&height=" + data.height + "&age=" + data.age + "&userId=" + recipient + "&weight=" + data.weight + "&exerciseLevel=" + exercise,
               method: "GET"
             }, function(error, response, body) {
               if (!error) {

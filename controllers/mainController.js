@@ -289,6 +289,7 @@ module.exports = function(app) {
                         var parsed = JSON.parse(response.body);
                         var userName = parsed.first_name;
                         var gender = parsed.gender;
+                        console.log("user gender:",gender);
                         //find if user already stored in database
                         User.findOne({
                           user_id: event.sender.id
@@ -463,64 +464,69 @@ module.exports = function(app) {
                                 textMsg1 = process.env.TEXT_MSG;
                                 functionController.receivedMessage(event.sender.id, title, payload, textMsg1);
                               }
+
                               else if(/[1-9]?[0-9]+/i.test(event.message.text))
                               { //text is numeric type
                                 //find second last webhook text message
-                                WebhookHistory.findOne({}).skip(1).sort({seq:-1}).exec(function(err,data){
+                                WebhookHistory.find({}).skip(1).sort({seq:-1}).limit(1).exec(function(err,data){
                                   if(!err)
                                   {
                                     console.log("data found ",data);
-                                    if(data.text==process.env.ASK_FOR_AGE)
+                                    if(data[0].text==process.env.ASK_FOR_AGE)
                                     {
                                       console.log("update age");
                                       functionController.updateAge(event.sender.id,event.message.text);
                                     }
-                                    else if(data.text==process.env.ASK_FOR_HEIGHT)
+                                    else if(data[0].text==process.env.ASK_FOR_HEIGHT)
                                     {
                                       console.log("height update");
                                     functionController.updateHeight(event.sender.id,event.message.text);
                                     }
-                                    else if(data.text==process.env.ASK_FOR_WEIGHT)
+                                    else if(data[0].text==process.env.ASK_FOR_WEIGHT)
                                     {
                                     functionController.updateWeight(event.sender.id,event.message.text);
                                     }
-                                    else if(data.text==process.env.TEXT_RICE)
+                                    else if(data[0].text==process.env.TEXT_RICE)
                                     {
                                     console.log("text rice");
                                     functionController.rice(event.sender.id);
                                     }
-                                    else if(data.text==process.env.TEXT_CHAPATTI)
+                                    else if(data[0].text==process.env.TEXT_CHAPATTI)
                                     {
                                     console.log("text chapatti");
                                     functionController.sizeChapatti(event.sender.id);
                                     }
-                                    else if(data.text==process.env.TEXT_CHEESE)
+                                    else if(data[0].text==process.env.TEXT_CHEESE)
                                     {
                                     console.log("text cheese");
                                     functionController.compare(event.sender.id);
                                     }
-                                    else if(data.text==process.env.TEXT_MEAT)
+                                    else if(data[0].text==process.env.TEXT_MEAT)
                                     {
                                     console.log("text MEAT");
                                     functionController.meat(event.sender.id);
                                     }
-                                    else if(data.text==process.env.TEXT_DAL)
+                                    else if(data[0].text==process.env.TEXT_DAL)
                                     {
                                     console.log("text DAL");
                                     functionController.gram(event.sender.id);
                                     }
-                                    else if(data.text==process.env.TEXT_MILK)
+                                    else if(data[0].text==process.env.TEXT_MILK)
                                     {
                                     console.log("text MILK");
                                     functionController.endAsking(event.sender.id);
                                     }
-                                    else if(data.text==process.env.TEXT_CALORIE)
+                                    else if(data[0].text==process.env.TEXT_CALORIE)
                                     {
                                     console.log("CALORIE");
                                     functionController.pizzaCalorie(event.sender.id);
                                     }
+                                  else if(data[0].text==process.env.TEXT_MSG_CALORIE_CALCULATOR)
+                                    {
+                                    functionController.calorieForDish(event.sender.id,event.message.text);
+                                    }
                                     else {
-                                      console.log("start bot with hi");
+                                      console.log("start bot with hi 1");
                                       functionController.callApiAi(event.sender.id,event.message.text);
                                     }
                                   }
@@ -532,64 +538,68 @@ module.exports = function(app) {
                               else if(/[a-z]+/i.test(event.message.text))
                               { //text is numeric type
                                 //find second last webhook text message
-                                WebhookHistory.findOne({}).skip(1).sort({seq:-1}).exec(function(err,data){
+                                WebhookHistory.find({}).skip(1).sort({seq:-1}).limit(1).exec(function(err,data){
                                   if(!err)
                                   {
                                     console.log("data found:",data);
-                                    if(data.text==process.env.ASK_FOR_AGE)
+                                    if(data[0].text==process.env.ASK_FOR_AGE)
                                     {
 
                                     functionController.replyWithPlainText(event.sender.id,process.env.TEXT_INTEGER);
                                     functionController.replyWithPlainText(event.sender.id,process.env.ASK_FOR_AGE);
                                     }
-                                    else if(data.text==process.env.ASK_FOR_HEIGHT)
+                                    else if(data[0].text==process.env.ASK_FOR_HEIGHT)
                                     {
                                       console.log("height update");
                                       functionController.replyWithPlainText(event.sender.id,process.env.TEXT_INTEGER);
                                       functionController.replyWithPlainText(event.sender.id,process.env.ASK_FOR_HEIGHT);
                                     }
-                                    else if(data.text==process.env.ASK_FOR_WEIGHT)
+                                    else if(data[0].text==process.env.ASK_FOR_WEIGHT)
                                     {
                                       functionController.replyWithPlainText(event.sender.id,process.env.TEXT_INTEGER);
                                       functionController.replyWithPlainText(event.sender.id,process.env.ASK_FOR_WEIGHT);
                                     }
-                                    else if(data.text==process.env.TEXT_RICE)
+                                    else if(data[0].text==process.env.TEXT_RICE)
                                     {
                                     console.log("text rice");
                                     functionController.rice(event.sender.id);
                                     }
-                                    else if(data.text==process.env.TEXT_CHAPATTI)
+                                    else if(data[0].text==process.env.TEXT_CHAPATTI)
                                     {
                                     console.log("text chapatti");
                                     functionController.chapatti(event.sender.id);
                                     }
-                                    else if(data.text==process.env.TEXT_CHEESE)
+                                    else if(data[0].text==process.env.TEXT_CHEESE)
                                     {
                                     console.log("text cheese");
                                     functionController.cheese(event.sender.id);
                                     }
-                                    else if(data.text==process.env.TEXT_MEAT)
+                                    else if(data[0].text==process.env.TEXT_MEAT)
                                     {
                                     console.log("text MEAT");
                                     functionController.meat(event.sender.id);
                                     }
-                                    else if(data.text==process.env.TEXT_DAL)
+                                    else if(data[0].text==process.env.TEXT_DAL)
                                     {
                                     console.log("text DAL");
                                     functionController.gram(event.sender.id);
                                     }
-                                    else if(data.text==process.env.TEXT_MILK)
+                                    else if(data[0].text==process.env.TEXT_MILK)
                                     {
                                     console.log("text MILK");
                                     functionController.endAsking(event.sender.id);
                                     }
-                                    else if(data.text==process.env.TEXT_CALORIE)
+                                    else if(data[0].text==process.env.TEXT_CALORIE)
                                     {
                                     console.log("CALORIE");
                                     functionController.pizzaCalorie(event.sender.id);
                                     }
+                                    else if(data[0].text==process.env.TEXT_MSG_CALORIE_CALCULATOR)
+                                    {
+                                    functionController.calorieForDish(event.sender.id,event.message.text);
+                                    }
                                     else {
-                                      console.log("start bot with hi");
+                                      console.log("start bot with hi 2");
                                       functionController.callApiAi(event.sender.id,event.message.text);
                                     }
                                   }
@@ -597,7 +607,9 @@ module.exports = function(app) {
 
                                   }
                                 })
-                              } else {
+                              }
+
+                              else {
                              functionController.callApiAi(event.sender.id,event.message.text);
                               }
 

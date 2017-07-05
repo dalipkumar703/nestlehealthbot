@@ -149,6 +149,7 @@ exports.quickReplyPostback = function(recipient, postback) {
           var str = result[i].b_t_w_url;
           var btw_url = str.split(",");
 
+
           if (postback == "VEG_DIET") {
             button_web_url[i] = btw_url[0];
             console.log("button web url:", button_web_url[i]);
@@ -187,35 +188,116 @@ exports.quickReplyPostback = function(recipient, postback) {
         }).exec(function(err, result) {
           if (!err) {
             // console.log("hurray:",result);
-            for (var i = 0; i < _.size(result); i++) {
-              title[i] = result[i].title;
-              subtitle[i] = result[i].subtitle;
-              image_url[i] = result[i].image_url;
-              button_web_title[i] = result[i].b_t_w_title;
-              button_web_url[i] = result[i].b_t_w_url;
-              var str = result[i].image_url;
-              var images_url = str.split(",");
-              console.log("web url:", button_web_url[i]);
-              if (postback == "VEG_DIET") {
-                image_url[i] = images_url[0];
-                console.log("button web url:", image_url[i]);
-              }
-              if (postback == "VEGAN_DIET") {
-                image_url[i] = images_url[1];
-                console.log("button web url:", image_url[i]);
-              }
+            UserPersonal.findOne({user_id:recipient}).exec(function(err,data)
+          {
+            if(!err)
+            {
+              if(data.bmr<2000)
+              {
+                console.log("range is between 1500 & 2000");
+                for (var i = 0; i < _.size(result); i++) {
+                  title[i] = result[i].title;
+                  subtitle[i] = result[i].subtitle;
+                  image_url[i] = result[i].image_url;
+                  button_web_title[i] = result[i].b_t_w_title;
+                  button_web_url[i] = result[i].b_t_w_url;
+                  var str = result[i].image_url;
+                  var images_url = str.split(",");
 
-              if (postback == "EGG_DIET") {
-                image_url[i] = images_url[2];
-                console.log("button web url:", image_url[i]);
-              }
-              if (postback == "NON_VEG_DIET") {
-                image_url[i] = images_url[3];
-                console.log("button web url:", image_url[i]);
-              }
+                  console.log("web url:", button_web_url[i]);
+                  if (postback == "VEG_DIET") {
+                    image_url[i] = images_url[0];
+                    console.log("button web url:", image_url[i]);
+                  }
+                  if (postback == "VEGAN_DIET") {
+                    image_url[i] = images_url[1];
+                    console.log("button web url:", image_url[i]);
+                  }
 
+                  if (postback == "EGG_DIET") {
+                    image_url[i] = images_url[2];
+                    console.log("button web url:", image_url[i]);
+                  }
+                  if (postback == "NON_VEG_DIET") {
+                    image_url[i] = images_url[3];
+                    console.log("button web url:", image_url[i]);
+                  }
+
+                }
+              }
+              else if(data.bmr>=2000&&data.bmr<2500) {
+                 console.log("range is between 2000 & 2500");
+                 for (var i = 0; i < _.size(result); i++) {
+                   title[i] = result[i].title;
+                   subtitle[i] = result[i].subtitle;
+                   image_url[i] = result[i].image_url;
+                   button_web_title[i] = result[i].b_t_w_title;
+                   button_web_url[i] = result[i].b_t_w_url;
+                   var str = result[i].image_url;
+                   var images_url = str.split(",");
+
+                   console.log("web url:", button_web_url[i]);
+                   if (postback == "VEG_DIET") {
+                     image_url[i] = images_url[4];
+                     console.log("button web url:", image_url[i]);
+                   }
+                   if (postback == "VEGAN_DIET") {
+                     image_url[i] = images_url[5];
+                     console.log("button web url:", image_url[i]);
+                   }
+
+                   if (postback == "EGG_DIET") {
+                     image_url[i] = images_url[6];
+                     console.log("button web url:", image_url[i]);
+                   }
+                   if (postback == "NON_VEG_DIET") {
+                     image_url[i] = images_url[7];
+                     console.log("button web url:", image_url[i]);
+                   }
+
+                 }
+              }
+              else if(data.bmr>=2500)
+              {
+                 console.log("range is between 2500");
+                 for (var i = 0; i < _.size(result); i++) {
+                   title[i] = result[i].title;
+                   subtitle[i] = result[i].subtitle;
+                   image_url[i] = result[i].image_url;
+                   button_web_title[i] = result[i].b_t_w_title;
+                   button_web_url[i] = result[i].b_t_w_url;
+                   var str = result[i].image_url;
+                   var images_url = str.split(",");
+
+                   console.log("web url:", button_web_url[i]);
+                   if (postback == "VEG_DIET") {
+                     image_url[i] = images_url[8];
+                     console.log("button web url:", image_url[i]);
+                   }
+                   if (postback == "VEGAN_DIET") {
+                     image_url[i] = images_url[9];
+                     console.log("button web url:", image_url[i]);
+                   }
+
+                   if (postback == "EGG_DIET") {
+                     image_url[i] = images_url[10];
+                     console.log("button web url:", image_url[i]);
+                   }
+                   if (postback == "NON_VEG_DIET") {
+                     image_url[i] = images_url[11];
+                     console.log("button web url:", image_url[i]);
+                   }
+
+                 }
+              }
+              functionController.replyWithUrlOnly(recipient, title, subtitle, image_url, button_web_title, button_web_url);
             }
-            functionController.replyWithUrlOnly(recipient, title, subtitle, image_url, button_web_title, button_web_url);
+            else {
+              console.log(err);
+            }
+          });
+
+
             QuickReplyText.find({
               $or: [{
                   payload_for: "VEGAN_DIET"
