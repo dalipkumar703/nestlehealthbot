@@ -200,8 +200,8 @@ exports.TextMessage = function(recipient, text) {
     }
 
   }
-  if (/[1-9][0-9]?\sfe?e?t,?[1-9]?[0-9]?\s?i?n?c?h?e?s?/i.test(text)||/[a-z]+\sfe?e?t,?[a-z]*?\s?i?n?c?h?e?s?/i.test(text)) {
-    if(/[a-z]+\sfe?e?t,?[a-z]*?\s?i?n?c?h?e?s?/i.test(text))
+  if (/[1-9][0-9]?\s?fe?e?t,?[1-9]?[0-9]?\s?i?n?c?h?e?s?/i.test(text)||/[a-z]+\s?fe?e?t,?[a-z]*?\s?i?n?c?h?e?s?/i.test(text)) {
+    if(/[a-z]+\s?fe?e?t,?[a-z]*?\s?i?n?c?h?e?s?/i.test(text))
     {
       console.log("height is in alphabet");
       var Msg=process.env.TEXT_INTEGER;
@@ -211,8 +211,22 @@ exports.TextMessage = function(recipient, text) {
     else {
       var textmsg = text;
       var num = textmsg.match(/\d/g);
+      console.log("num 0",num);
+      var first=num[0];
+      num.splice(0,1);
+      console.log("f",num);
       numb = num.join("");
-    functionController.updateHeight(recipient,numb);
+    var height;
+      if(numb.length==0)
+      {
+        height=first;
+      }
+      else {
+       height=first+"."+numb;
+      }
+
+      console.log("height:",height);
+    functionController.updateHeight(recipient,height);
     }
 
   }

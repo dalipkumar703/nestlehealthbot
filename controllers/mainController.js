@@ -85,6 +85,28 @@ module.exports = function(app) {
         entry.messaging.forEach(function(event) {
 
            if (event.postback) { //message is postback type
+             if(event.postback.payload==="START_BOT")
+             {
+               User.findOne({user_id:event.sender.id}).exec(function(err,data){
+                 if(!err)
+                 {
+                   title[0] = process.env.TITLE;
+                   payload[0] = process.env.PAYLOAD_TITLE;
+                   console.log("name",data);
+                   textMsg = "Hi " + data.name + ", get fit with Nestle, your companion to good health.";
+                   //receivedMessage(event, textMsg);title,payload
+                   functionController.replyWithPlainText(event.sender.id, textMsg);
+                   textMsg1 = process.env.TEXT_MSG;
+                   functionController.receivedMessage(event.sender.id, title, payload, textMsg1);
+
+                 }
+                 else {
+                   console.log("error in user retrieval");
+                 }
+
+               })
+
+             }
             if(event.postback.payload==="NOT_IN_MOOD_TO_PLAY_GAME")
             {
               functionController.replyWithPlainText(event.sender.id,process.env.TEXT_START);
@@ -480,7 +502,7 @@ module.exports = function(app) {
                                     else if(data[0].text==process.env.ASK_FOR_HEIGHT)
                                     {
                                       console.log("height update");
-                                    functionController.updateHeight(event.sender.id,event.message.text);
+                                    BmrCalculateModule.TextMessage(event.sender.id, event.message.text);
                                     }
                                     else if(data[0].text==process.env.ASK_FOR_WEIGHT)
                                     {
@@ -567,7 +589,7 @@ module.exports = function(app) {
                                     else if(data[0].text==process.env.TEXT_CHAPATTI)
                                     {
                                     console.log("text chapatti");
-                                    functionController.chapatti(event.sender.id);
+                                    functionController.sizeChapatti(event.sender.id);
                                     }
                                     else if(data[0].text==process.env.TEXT_CHEESE)
                                     {
@@ -598,6 +620,7 @@ module.exports = function(app) {
                                     {
                                     functionController.calorieForDish(event.sender.id,event.message.text);
                                     }
+
                                     else {
                                       console.log("start bot with hi 2");
                                       functionController.callApiAi(event.sender.id,event.message.text);
@@ -628,6 +651,7 @@ module.exports = function(app) {
                       console.log("hello");
                     });
                   }
+
 
               WebhookHistory({
                 seq:event.message.seq,

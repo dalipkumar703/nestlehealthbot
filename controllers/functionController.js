@@ -177,7 +177,7 @@ exports.callSendAPI = function(messageData) {
         messageId, recipientId);
     } else {
       console.error("Unable to send message.");
-      //console.error(response);
+      console.error(response);
       //console.error(error);
     }
     console.log("hello");
@@ -711,6 +711,11 @@ exports.callApiAi=function(recipient,message)
     let aiText = response.result.fulfillment.speech;
     console.log("Api ai reply:", aiText);
     this.replyWithPlainText(recipient, aiText);
+    if(response.result.metadata.intentName=="health-guide")
+    {
+      console.log("intent health guide");
+      this.healthGuide(recipient);
+    }
   });
 
   apiai.on('error', (error) => {
@@ -808,4 +813,52 @@ exports.calorieForDish=function(recipient,text)
 
 
   });
+}
+exports.healthGuide=function(recipient)
+{
+  var text;
+  var title=[];
+  var postback_title=[];
+  var payload=[];
+  var url=[];
+  text=process.env.DIET_INGREDIENT;
+  this.replyWithPlainText(recipient,text);
+  text=process.env.SAY_HI_TO_BOT;
+
+  title[0]=process.env.HEALTH_TIPS;
+  url[0]=process.env.EAT_AND_DRINK;
+  postback_title[0]=process.env.START_AGAIN;
+  payload[0]=process.env.PAYLOAD_START_BOT;
+  postback_title[1]=process.env.CALL_US;
+  payload[1]=process.env.TELEPHONE_NO;
+  var messageData = {
+    recipient: {
+      id: recipient
+    },
+    message: {
+      "attachment": {
+        "type": "template",
+        "payload": {
+          "template_type": "button",
+          "text": text,
+          "buttons": [{
+              "type": "web_url",
+              "title": title[0],
+              "url": url[0]
+            },
+            {
+              "type": "postback",
+              "title": postback_title[0],
+              "payload": payload[0]
+            },
+            {
+              "type": "phone_number",
+              "title": postback_title[1],
+              "payload": payload[1]
+            }]
+        }
+      }
+    }
+  };
+  this.callSendAPI(messageData);
 }

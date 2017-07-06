@@ -192,7 +192,7 @@ exports.quickReplyPostback = function(recipient, postback) {
           {
             if(!err)
             {
-              if(data.bmr<2000)
+              if(data.bmr<process.env.TWO_THOUSAND)
               {
                 console.log("range is between 1500 & 2000");
                 for (var i = 0; i < _.size(result); i++) {
@@ -225,7 +225,7 @@ exports.quickReplyPostback = function(recipient, postback) {
 
                 }
               }
-              else if(data.bmr>=2000&&data.bmr<2500) {
+              else if(data.bmr>=process.env.TWO_THOUSAND&&data.bmr<process.env.TWENTY_FIVE_HUNDRED) {
                  console.log("range is between 2000 & 2500");
                  for (var i = 0; i < _.size(result); i++) {
                    title[i] = result[i].title;
@@ -257,7 +257,7 @@ exports.quickReplyPostback = function(recipient, postback) {
 
                  }
               }
-              else if(data.bmr>=2500)
+              else if(data.bmr>=process.env.TWENTY_FIVE_HUNDRED)
               {
                  console.log("range is between 2500");
                  for (var i = 0; i < _.size(result); i++) {
