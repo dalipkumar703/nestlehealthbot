@@ -200,7 +200,7 @@ exports.TextMessage = function(recipient, text) {
     }
 
   }
-  if (/[1-9][0-9]?\s?fe?e?t,?[1-9]?[0-9]?\s?i?n?c?h?e?s?/i.test(text)||/[a-z]+\s?fe?e?t,?[a-z]*?\s?i?n?c?h?e?s?/i.test(text)||/[0-9]+/i.test(text)) {
+  else if (/[1-9][0-9]?\s?fe?e?t,?[1-9]?[0-9]?\s?i?n?c?h?e?s?/i.test(text)||/[a-z]+\s?fe?e?t,?[a-z]*?\s?i?n?c?h?e?s?/i.test(text)||/[0-9]+/i.test(text)) {
     if(/[a-z]+\s?fe?e?t,?[a-z]*?\s?i?n?c?h?e?s?/i.test(text))
     {
       console.log("height is in alphabet");
@@ -230,7 +230,7 @@ exports.TextMessage = function(recipient, text) {
     }
 
   }
-  if (/[1-9][0-9]?[0-9]?\sKg/i.test(text)||/[a-z]+\sKg/i.test(text)) {
+  else if (/[1-9][0-9]?[0-9]?\sKg/i.test(text)||/[a-z]+\sKg/i.test(text)) {
     if(/[a-z]+\sKg/i.test(text))
     {
       console.log("weight is in alphabet");

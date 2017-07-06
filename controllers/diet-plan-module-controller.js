@@ -314,10 +314,6 @@ exports.quickReplyPostback = function(recipient, postback) {
               ]
             }).exec(function(err, data) {
               if (!err) {
-
-
-
-
                 setTimeout(function(){
 
                     functionController.replyWithPlainText(recipient, data[2].text);
@@ -346,12 +342,12 @@ exports.quickReplyPostback = function(recipient, postback) {
                       }
                       console.log("payload in quick reply:", payload1);
                       functionController.QuickReplyForTwo(recipient, title, payload1, data[1].text);
-
+                        console.log("quick reply send");
                     } else {
                       console.log("error in reply with url only");
                     }
                   });
-                },3000);
+                },1000);
 
               } else {
                 console.log("error in retrieving from quick reply model");
