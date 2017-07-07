@@ -298,61 +298,64 @@ exports.quickReplyPostback = function(recipient, postback) {
           });
 
 
-            QuickReplyText.find({
-              $or: [{
-                  payload_for: "VEGAN_DIET"
-                },
-                {
-                  payload_for: "VEG_DIET"
-                },
-                {
-                  payload_for: "EGG_DIET"
-                },
-                {
-                  payload_for: "NON_VEG_DIET"
-                }
-              ]
-            }).exec(function(err, data) {
-              if (!err) {
-                setTimeout(function(){
+   setTimeout(function(){
 
-                    functionController.replyWithPlainText(recipient, data[2].text);
+                 QuickReplyText.find({
+                   $or: [{
+                       payload_for: "VEGAN_DIET"
+                     },
+                     {
+                       payload_for: "VEG_DIET"
+                     },
+                     {
+                       payload_for: "EGG_DIET"
+                     },
+                     {
+                       payload_for: "NON_VEG_DIET"
+                     }
+                   ]
+                 }).exec(function(err, data) {
+                   if (!err) {
 
-                  QuickReply.find({
-                    $or: [{
-                        payload_for: "VEGAN_DIET"
-                      },
-                      {
-                        payload_for: "VEG_DIET"
-                      },
-                      {
-                        payload_for: "EGG_DIET"
-                      },
-                      {
-                        payload_for: "NON_VEG_DIET"
-                      }
-                    ]
-                  }).exec(function(err, result) {
-                    if (!err) {
-                      console.log("result", result);
-                      for (var i = 0; i < _.size(result); i++) {
-                        title[i] = result[i].title;
-                        payload1[i] = result[i].payload;
 
-                      }
-                      console.log("payload in quick reply:", payload1);
-                      functionController.QuickReplyForTwo(recipient, title, payload1, data[1].text);
-                        console.log("quick reply send");
-                    } else {
-                      console.log("error in reply with url only");
-                    }
-                  });
-                },1000);
+                         functionController.replyWithPlainText(recipient, data[2].text);
 
-              } else {
-                console.log("error in retrieving from quick reply model");
-              }
-            });
+                       QuickReply.find({
+                         $or: [{
+                             payload_for: "VEGAN_DIET"
+                           },
+                           {
+                             payload_for: "VEG_DIET"
+                           },
+                           {
+                             payload_for: "EGG_DIET"
+                           },
+                           {
+                             payload_for: "NON_VEG_DIET"
+                           }
+                         ]
+                       }).exec(function(err, result) {
+                         if (!err) {
+                           console.log("result", result);
+                           for (var i = 0; i < _.size(result); i++) {
+                             title[i] = result[i].title;
+                             payload1[i] = result[i].payload;
+
+                           }
+                           console.log("payload in quick reply:", payload1);
+                           functionController.QuickReplyForTwo(recipient, title, payload1, data[1].text);
+                             console.log("quick reply send");
+                         } else {
+                           console.log("error in reply with url only");
+                         }
+                       });
+
+
+                   } else {
+                     console.log("error in retrieving from quick reply model");
+                   }
+                 });
+   },1500);
           } else {
             console.log("error in getting result from quick reply text ");
           }
