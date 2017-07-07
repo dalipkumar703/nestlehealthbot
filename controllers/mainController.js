@@ -662,7 +662,7 @@ module.exports = function(app) {
                 }
                console.log("sequence no.",data[0].seq);
                WebhookHistory({
-                 seq:parseInt(data[0].seq)+1,
+                 seq:data[0].seq+1,
                  text:event.message.text
                }).save(function(err,data){
                  if(!err)
