@@ -648,14 +648,32 @@ module.exports = function(app) {
                   }
 
 
-              WebhookHistory({
-                seq:event.message.seq,
-                text:event.message.text
-              }).save(function(err,data){
+
+              WebhookHistory.find({}).sort({seq:-1}).limit(1).exec(function(err,data){
                 if(!err)
-              console.log("data stored in webhook collection:",data);
-              else
-              console.log("webhook is not saved");
+                {
+                  console.log("data in webhistory",data.length);
+                if(data.length==0)
+                {
+                  data=[{
+                    seq:process.env.ZERO,
+                    text:process.env.HELLO
+                  }];
+                }
+               console.log("sequence no.",data[0].seq);
+               WebhookHistory({
+                 seq:parseInt(data[0].seq)+1,
+                 text:event.message.text
+               }).save(function(err,data){
+                 if(!err)
+               console.log("data stored in webhook collection:",data);
+               else
+               console.log("webhook is not saved");
+               });
+                }
+                else {
+                  console.log("error in webhook history storing");
+                }
               });
             }
             //receivedMessage(event,textMsg)
