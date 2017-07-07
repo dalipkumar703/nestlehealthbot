@@ -352,7 +352,7 @@ module.exports = function(app) {
                                       if(data.text==process.env.ASK_FOR_AGE)
                                       {
                                         console.log("update age");
-                                        functionController.updateAge(event.sender.id,event.message.text);
+                                        BmrCalculateModule.updateAge(event.sender.id,event.message.text);
                                       }
 
                                       else {
@@ -497,7 +497,7 @@ module.exports = function(app) {
                                     else if(data[0].text==process.env.ASK_FOR_HEIGHT)
                                     {
                                       console.log("height update");
-                                    BmrCalculateModule.TextMessage(event.sender.id, event.message.text);
+                                    BmrCalculateModule.updateHeight(event.sender.id, event.message.text);
                                     }
                                     else if(data[0].text==process.env.ASK_FOR_WEIGHT)
                                     {
@@ -589,7 +589,7 @@ module.exports = function(app) {
                                     else if(data[0].text==process.env.TEXT_CHEESE)
                                     {
                                     console.log("text cheese");
-                                    functionController.cheese(event.sender.id);
+                                    functionController.compare(event.sender.id);
                                     }
                                     else if(data[0].text==process.env.TEXT_MEAT)
                                     {
