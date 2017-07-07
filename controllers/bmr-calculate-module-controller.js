@@ -248,3 +248,18 @@ exports.TextMessage = function(recipient, text) {
 
   }
 }
+exports.updateAge=function(recipient,text)
+{
+  console.log("age is not alphabet");
+ var num = text.match(/\d/g);
+ numb = num.join("");
+ //  console.log(numb);
+functionController.updateAge(recipient,numb);
+}
+exports.updateWeight=function(recipient,text)
+{
+  var textmsg = text;
+  var num = textmsg.match(/\d/g);
+  numb = num.join("");
+  functionController.updateWeight(recipient,numb);
+}

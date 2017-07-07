@@ -334,12 +334,7 @@ module.exports = function(app) {
                                 console.log("user store:", data);
                               });
                               //not in use this if statement
-                              if (/[1-9]?[0-9]/i.test(event.message.text)) {
-                                //console.log("age is correct");
-                                var textmsg = event.message.text;
-                                var num = textmsg.match(/\d/g);
-                                console.log(num);
-                              }
+
                               if(/[1-9]?[0-9]+/i.test(event.message.text))
                               { //text is numeric type
                                 //find second last webhook text message
@@ -497,7 +492,7 @@ module.exports = function(app) {
                                     if(data[0].text==process.env.ASK_FOR_AGE)
                                     {
                                       console.log("update age");
-                                      functionController.updateAge(event.sender.id,event.message.text);
+                                      BmrCalculateModule.updateAge(event.sender.id,event.message.text);
                                     }
                                     else if(data[0].text==process.env.ASK_FOR_HEIGHT)
                                     {
@@ -506,7 +501,7 @@ module.exports = function(app) {
                                     }
                                     else if(data[0].text==process.env.ASK_FOR_WEIGHT)
                                     {
-                                    functionController.updateWeight(event.sender.id,event.message.text);
+                                    BmrCalculateModule.updateWeight(event.sender.id,event.message.text);
                                     }
                                     else if(data[0].text==process.env.TEXT_RICE)
                                     {
