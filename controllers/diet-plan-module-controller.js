@@ -359,7 +359,7 @@ setTimeout(function(){
                               }
                             });
 
-        },1000);
+        },2000);
 
           } else {
             console.log("error in getting result from quick reply text ");
