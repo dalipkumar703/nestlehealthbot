@@ -355,7 +355,7 @@ exports.quickReplyPostback = function(recipient, postback) {
                      console.log("error in retrieving from quick reply model");
                    }
                  });
-   },1500);
+   },3500);
           } else {
             console.log("error in getting result from quick reply text ");
           }
