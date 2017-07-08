@@ -6,6 +6,7 @@ var QuickReplyText = require('../models/quick_reply_text.js');
 var UserPersonal = require('../models/user_personal.js');
 var User = require('../models/user.js');
 var dotenv = require('dotenv');
+var MealPlan=require('../models/meal_plan.js');
 dotenv.load();
 var apiapp = apiai(process.env.API_AI_CLIENT);
 //HI text message send
@@ -861,4 +862,42 @@ exports.healthGuide=function(recipient)
     }
   };
   this.callSendAPI(messageData);
+}
+exports.MealPlan=function(recipient,postback,range)
+{
+  MealPlan.find({user_id:recipient}).exec(function(err,data)
+{
+  if(data.length==0)
+  {
+    MealPlan({
+      user_id: recipient,
+      calorie_range:range,
+      eating_choice:postback
+    }).save(function(err, data) {
+      if (!err) {
+
+        console.log("meal plan is saved");
+      } else {
+        console.log("age is not saved.");
+      }
+    });
+  }
+  else {
+    MealPlan.update({
+      user_id: recipient
+    }, {
+      $set: {
+        calorie_range:range,
+        eating_choice:postback
+      }
+    }).exec(function(err, data) {
+      if (!err) {
+        console.log("meal plan is updated.");
+      } else {
+        console.log("height is not saved.");
+      }
+    });
+  }
+});
+
 }
