@@ -296,36 +296,71 @@ exports.quickReplyPostback = function(recipient, postback) {
               console.log(err);
             }
           });
+/*
+setTimeout(function(){
 
-                           QuickReplyText.find({
-                             $or: [{
-                                 payload_for: "VEGAN_DIET"
-                               },
-                               {
-                                 payload_for: "VEG_DIET"
-                               },
-                               {
-                                 payload_for: "EGG_DIET"
-                               },
-                               {
-                                 payload_for: "NON_VEG_DIET"
-                               }
-                             ]
-                           }).exec(function(err, data) {
-                             if (!err) {
+              QuickReply.find({
+                $or: [{
+                    payload_for: "VEGAN_DIET"
+                  },
+                  {
+                    payload_for: "VEG_DIET"
+                  },
+                  {
+                    payload_for: "EGG_DIET"
+                  },
+                  {
+                    payload_for: "NON_VEG_DIET"
+                  }
+                ]
+              }).exec(function(err, result) {
+                if (!err) {
+                  console.log("result", result);
+                  for (var i = 0; i < _.size(result); i++) {
+                    title[i] = result[i].title;
+                    payload1[i] = result[i].payload;
+
+                  }
+                  console.log("payload in quick reply:", payload1);
+                  functionController.QuickReplyForTwo(recipient, title, payload1, data[1].text);
+                    console.log("quick reply send");
+                } else {
+                  console.log("error in reply with url only");
+                }
+              });
+},9000);
+*/
+        setTimeout(function(){
+          QuickReplyText.find({
+                              $or: [{
+                                  payload_for: "VEGAN_DIET"
+                                },
+                                {
+                                  payload_for: "VEG_DIET"
+                                },
+                                {
+                                  payload_for: "EGG_DIET"
+                                },
+                                {
+                                  payload_for: "NON_VEG_DIET"
+                                }
+                              ]
+                            }).exec(function(err, data) {
+                              if (!err) {
 
 
-                                   functionController.replyWithPlainText(recipient, data[2].text);
+                                    functionController.replyWithPlainText(recipient, data[2].text);
 
 
 
 
-                             } else {
-                               console.log("error in retrieving from quick reply model");
-                             }
-                           });
+                              } else {
+                                console.log("error in retrieving from quick reply model");
+                              }
+                            });
 
-   
+        },1000);
+
           } else {
             console.log("error in getting result from quick reply text ");
           }
