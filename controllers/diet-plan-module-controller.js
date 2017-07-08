@@ -349,7 +349,7 @@ setTimeout(function(){
                               if (!err) {
 
 
-                                    functionController.replyWithPlainText(recipient, data[2].text);
+                                    functionController.replyWithPlainText(recipient, data[1].text);
 
 
 
