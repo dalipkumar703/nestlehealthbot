@@ -189,6 +189,9 @@ exports.TextMessage = function(recipient, text) {
     console.log("age is in alphabet");
     var text=process.env.TEXT_INTEGER;
     functionController.replyWithPlainText(recipient,text);
+    setTimeout(function(){
+    functionController.replyWithPlainText(recipient,process.env.ASK_FOR_AGE);
+    },1000);
     }
     else
     {
@@ -196,7 +199,8 @@ exports.TextMessage = function(recipient, text) {
       var num = textmsg.match(/\d/g);
       numb = num.join("");
       //  console.log(numb);
-     functionController.updateAge(recipient,numb);
+     //functionController.updateAge(recipient,numb);
+     functionController.checkAge(recipient,numb);
     }
 
   }
@@ -206,7 +210,9 @@ exports.TextMessage = function(recipient, text) {
       console.log("height is in alphabet");
       var Msg=process.env.TEXT_INTEGER;
       functionController.replyWithPlainText(recipient,Msg);
-
+      setTimeout(function(){
+      functionController.replyWithPlainText(recipient,process.env.ASK_FOR_HEIGHT);
+      },1000);
     }
     else {
       var textmsg = text;
@@ -226,7 +232,8 @@ exports.TextMessage = function(recipient, text) {
       }
 
       console.log("height:",height);
-    functionController.updateHeight(recipient,height);
+   functionController.checkHeight(recipient,height);
+  //  functionController.updateHeight(recipient,height);
     }
 
   }
@@ -236,14 +243,16 @@ exports.TextMessage = function(recipient, text) {
       console.log("weight is in alphabet");
       var text=process.env.TEXT_INTEGER;
       functionController.replyWithPlainText(recipient,text);
-
+      setTimeout(function(){
+      functionController.replyWithPlainText(recipient,process.env.ASK_FOR_WEIGHT);
+      },1000);
     }
     else {
       var textmsg = text;
       var num = textmsg.match(/\d/g);
       numb = num.join("");
-      functionController.updateWeight(recipient,numb);
-
+    //  functionController.updateWeight(recipient,numb);
+     functionController.checkWeight(recipient,numb);
     }
 
   }
@@ -254,14 +263,16 @@ exports.updateAge=function(recipient,text)
  var num = text.match(/\d/g);
  numb = num.join("");
  //  console.log(numb);
-functionController.updateAge(recipient,numb);
+functionController.checkAge(recipient,numb);
+//functionController.updateAge(recipient,numb);
 }
 exports.updateWeight=function(recipient,text)
 {
   var textmsg = text;
   var num = textmsg.match(/\d/g);
   numb = num.join("");
-  functionController.updateWeight(recipient,numb);
+  functionController.checkWeight(recipient,numb);
+//  functionController.updateWeight(recipient,numb);
 }
 exports.updateHeight=function(recipient,text)
 {
@@ -282,5 +293,6 @@ var height;
   }
 
   console.log("height:",height);
-functionController.updateHeight(recipient,height);
+functionController.checkHeight(recipient,height);
+//functionController.updateHeight(recipient,height);
 }

@@ -178,7 +178,7 @@ exports.callSendAPI = function(messageData) {
         messageId, recipientId);
     } else {
       console.error("Unable to send message.");
-      console.error(response);
+    //  console.error(response);
       //console.error(error);
     }
     console.log("hello");
@@ -539,9 +539,9 @@ exports.callSendWithXPayload = function(recipient, payload, title, text, url, ur
 }
 //ask new question to user
 exports.callAskQuestion = function(recipient, title, payload, text, url) {
-
+   this.callSendImageOnly(recipient, url);
   this.receivedMessage(recipient, title, payload, text);
-  this.callSendImageOnly(recipient, url);
+
 }
 
 exports.updateAge=function(recipient,age)
@@ -900,4 +900,81 @@ exports.MealPlan=function(recipient,postback,range)
   }
 });
 
+}
+exports.checkAge=function(recipient,age)
+{
+  request({
+  url:"http://utilities.syncnscan.com/checkage?age="+age,
+  method:"GET"
+},function(error,response,body){
+  if(!error)
+  {
+    var result=JSON.parse(response.body);
+  console.log("check age result:",result);
+  if(result.set_variables.error!="false")
+  {
+    console.log("error message:",result.set_variables.msgerror);
+exports.replyWithPlainText(recipient,result.set_variables.msgerror);
+setTimeout(function(){
+exports.replyWithPlainText(recipient,process.env.ASK_FOR_AGE);
+},1000);
+
+  }
+  else {
+    console.log("update age");
+    exports.updateAge(recipient,age);
+  }
+  }
+});
+}
+
+exports.checkHeight=function(recipient,height)
+{
+  request({
+    url:"http://utilities.syncnscan.com/checkheight?height="+height,
+    method:"GET"
+  },function(error,response,body){
+    if(!error)
+    {
+      var result=JSON.parse(response.body);
+    console.log("check age result:",result);
+    if(result.set_variables.error!="false")
+    {
+      console.log("error message:",result.set_variables.msgerror);
+      exports.replyWithPlainText(recipient,result.set_variables.msgerror);
+
+  setTimeout(function(){
+  exports.replyWithPlainText(recipient,process.env.ASK_FOR_HEIGHT);
+  },1000);
+    }
+    else {
+      exports.updateHeight(recipient,height);
+    }
+    }
+  });
+}
+exports.checkWeight=function(recipient,weight)
+{
+  request({
+    url:"http://utilities.syncnscan.com/checkweight?weight="+weight,
+    method:"GET"
+  },function(error,response,body){
+    if(!error)
+    {
+      var result=JSON.parse(response.body);
+    console.log("check age result:",result);
+    if(result.set_variables.error!="true")
+    {
+      console.log("error message:",result.set_variables.msgerror);
+      exports.replyWithPlainText(recipient,result.set_variables.msgerror);
+      setTimeout(function(){
+        exports.replyWithPlainText(recipient,process.env.ASK_FOR_WEIGHT);
+      },1000);
+
+    }
+    else {
+      exports.updateWeight(recipient,weight);
+    }
+    }
+  });
 }
