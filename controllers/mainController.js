@@ -67,7 +67,7 @@ module.exports = function(app) {
       res.sendStatus(403);
     }
   });
-//Handle facebook webhook request after token verify
+//Handle 
   app.post('/webhook', function(req, res) {
     var data = req.body;
 

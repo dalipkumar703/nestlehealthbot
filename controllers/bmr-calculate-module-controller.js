@@ -1,6 +1,6 @@
 
 /*
- * Author :Saurabh Singh 
+ * Author :Saurabh Singh
    lead By : Munish Malhotra ,Tarun Anand
    Date : 21/06/2016
    Requirement Assignee : Ashish
@@ -283,7 +283,7 @@ exports.updateWeight=function(recipient,text)
   var num = textmsg.match(/\d/g);
   numb = num.join("");
   functionController.checkWeight(recipient,numb);
-//  functionController.updateWeight(recipient,numb);
+//  
 }
 exports.updateHeight=function(recipient,text)
 {
